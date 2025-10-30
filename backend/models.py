@@ -1,4 +1,4 @@
-from extensions import db
+from backend.extensions import db
 from datetime import datetime, timezone
 from flask_security.core import UserMixin, RoleMixin
 
@@ -21,14 +21,15 @@ class User(BaseModel, UserMixin):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(50), nullable=False)
+    role = db.Column(db.String(255), nullable=False)
+    
     contact_number = db.Column(db.String(15), nullable=True)
 
     # One-to-one with Doctor & Patient
     doctor = db.relationship('Doctor', back_populates='user', uselist=False)
     patient = db.relationship('Patient', back_populates='user', uselist=False)
-    # uselist is a parameter in db.relationship() that tells SQLAlchemy whether the relationship should return a list of objects or a single object.
 
+    # uselist is a parameter in db.relationship() that tells SQLAlchemy whether the relationship should return a list of objects or a single object.
 
     # for flask-security-too
     fs_uniquifier = db.Column(db.String, unique = True, nullable =False)

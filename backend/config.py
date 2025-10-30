@@ -5,9 +5,13 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'instance/db.db')}"
     SECRET_KEY = os.environ.get("SECRET_KEY")
     SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
+
+    
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
