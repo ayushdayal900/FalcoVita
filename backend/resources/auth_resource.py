@@ -12,6 +12,7 @@ from backend.extensions import db
 
 
 auth_bp = Blueprint( 'auth', __name__, url_prefix='/auth')
+api_bp = Blueprint( 'api', __name__, url_prefix='/api')
 
 
 @auth_bp.route('/login1', methods=['POST'])

@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from dotenv import load_dotenv
-from backend.resources import auth_bp
+from backend.resources import auth_bp, api_bp
 import os
 
 
@@ -29,6 +29,8 @@ def create_app():
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
+    # app.register_blueprint(api_bp)
+    api.init_app(api_bp)
 
     # Database:  flask & flask sql alchemy
     from backend.models import db, User, Role, UserRoles, Doctor
