@@ -1,18 +1,50 @@
-from models import User, Doctor
-from services.service_errors import ServiceError
-from extensions import db
+from backend.models import User, Doctor
+from backend.services.service_errors import ServiceError
+from backend.extensions import db
 
 class DoctorService:
+
+    
     @staticmethod
     def get_by_email(email):
         return User.query.filter_by(email=email).first()
+
+    def get_by_id(id):
+        return User.query.filter_by(id=id).first()
 
     @staticmethod
     def get_all():
         doctors = User.query.filter_by(role='doctor').all()
         if not doctors:
             raise ServiceError("No doctors found")
-        return doctors
+        return [doctor.to_dict() for doctor in doctors]
+
+    @staticmethod
+    def create(data):
+        if User.query.filter_by(email=data['email']).first():
+            raise ServiceError(f"User with email {data['email']} already exists")
+        
+        new_user = User(
+            name=data['name'],
+            email=data['email'],
+            password=data['password'],  # In real application, hash the password
+            role='doctor',
+            contact_number=data.get('contact_number')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        new_doctor = Doctor(
+            id=new_user.id,
+            department_id=data['department_id'],
+            specialization=data['specialization'],
+            qualifications=data.get('qualifications'),
+            experience=data.get('experience')
+        )
+        db.session.add(new_doctor)
+        db.session.commit()
+
+        return new_doctor
 
     @staticmethod
     def delete_by_id(doctor_id):
@@ -28,6 +60,7 @@ class DoctorService:
         doctor = Doctor.query.filter_by(id=data.get('id')).first()
         if not doctor:
             raise ServiceError(f"Doctor with id {data.get('id')} not found")    
+            
         doctor.user.name = data.get('name', doctor.user.name)
         doctor.user.email = data.get('email', doctor.user.email)
         doctor.user.contact_number = data.get('contact_number', doctor.user.contact_number)
@@ -39,3 +72,4 @@ class DoctorService:
         
         db.session.commit()
         return doctor
+    

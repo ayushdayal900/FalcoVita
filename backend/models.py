@@ -14,6 +14,13 @@ class BaseModel(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
+    def to_dict_base(self):
+        return {
+            "id": self.id,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
 
 class User(BaseModel, UserMixin):
     __tablename__ = 'user'
@@ -36,6 +43,20 @@ class User(BaseModel, UserMixin):
     active = db.Column(db.Boolean, default = True) # False, then the user will not be able to login
     roles = db.Relationship('Role', backref = 'bearers', secondary='user_roles') 
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "name": self.name,
+            "email": self.email,
+            "role": self.role,
+            "contact_number": self.contact_number,
+            "active": self.active,
+        })
+        if self.doctor:
+            data["doctor"] = self.doctor.to_dict_basic()
+        if self.patient:
+            data["patient"] = self.patient.to_dict_basic()
+        return data
 
 
 # patient, doctor, admin etc
@@ -49,7 +70,14 @@ class UserRoles (BaseModel) :
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     role_id = db.Column(db. Integer, db.ForeignKey('role.id'))
 
-
+    
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "user_id": self.user_id,
+            "role_id": self.role_id,
+        })
+        return data
 
 class Doctor(BaseModel):
 
@@ -69,6 +97,26 @@ class Doctor(BaseModel):
     histories = db.relationship('PatientHistory', back_populates='doctor')
     patients = db.relationship('Patient', back_populates='doctor')
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "department_id": self.department_id,
+            "specialization": self.specialization,
+            "qualifications": self.qualifications,
+            "experience": self.experience,
+            "user": self.user.to_dict() if self.user else None,
+            "department": self.department.to_dict() if self.department else None,
+        })
+        return data
+
+    def to_dict_basic(self):
+        """Lightweight version to avoid recursion in user.to_dict()."""
+        return {
+            "id": self.id,
+            "specialization": self.specialization,
+            "qualifications": self.qualifications,
+            "experience": self.experience,
+        }
 
 # we can create a section table so that if we want to change something then we can send request to admin for same through section table
 # like cardiology, neurology etc
@@ -90,6 +138,25 @@ class Patient(BaseModel):
     histories = db.relationship('PatientHistory', back_populates='patient')
     doctor = db.relationship('Doctor', back_populates='patients')
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "dob": self.dob.isoformat() if self.dob else None,
+            "contact": self.contact,
+            "medical_record_number": self.medical_record_number,
+            "doctor_id": self.doctor_id,
+            "user": self.user.to_dict() if self.user else None,
+        })
+        return data
+
+        
+    def to_dict_basic(self):
+        return {
+            "id": self.id,
+            "contact": self.contact,
+            "medical_record_number": self.medical_record_number,
+        }
+
 
 class Department(BaseModel):
     __tablename__ = 'department'
@@ -102,6 +169,13 @@ class Department(BaseModel):
     appointments = db.relationship('Appointment', back_populates='department')
     histories = db.relationship('PatientHistory', back_populates='department')
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "name": self.name,
+            "overview": self.overview,
+        })
+        return data
 
 class Appointment(BaseModel):
     __tablename__ = 'appointment'
@@ -118,6 +192,16 @@ class Appointment(BaseModel):
     department = db.relationship('Department', back_populates='appointments')
     history = db.relationship('PatientHistory', back_populates='appointment', uselist=False)
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "patient_id": self.patient_id,
+            "doctor_id": self.doctor_id,
+            "department_id": self.department_id,
+            "appointment_date": self.appointment_date.isoformat() if self.appointment_date else None,
+            "status": self.status,
+        })
+        return data
 
 class PatientHistory(BaseModel):
     __tablename__ = 'patient_history'
@@ -137,6 +221,18 @@ class PatientHistory(BaseModel):
     appointment = db.relationship('Appointment', back_populates='history')
     prescriptions = db.relationship('Prescription', back_populates='history')
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "patient_id": self.patient_id,
+            "doctor_id": self.doctor_id,
+            "department_id": self.department_id,
+            "appointment_id": self.appointment_id,
+            "visit_type": self.visit_type,
+            "visit_date": self.visit_date.isoformat() if self.visit_date else None,
+            "diagnosis": self.diagnosis,
+        })
+        return data
 
 class Prescription(BaseModel):
     __tablename__ = 'prescription'
@@ -149,6 +245,16 @@ class Prescription(BaseModel):
     # relationship
     history = db.relationship('PatientHistory', back_populates='prescriptions')
 
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "history_id": self.history_id,
+            "medicines": self.medicines,
+            "dosage": self.dosage,
+            "instructions": self.instructions,
+        })
+        return data
+
 
 class AvailabilitySlot(BaseModel):
     __tablename__ = 'availability_slot'
@@ -160,3 +266,13 @@ class AvailabilitySlot(BaseModel):
 
     # relationship
     doctor = db.relationship('Doctor', back_populates='availabilities')
+
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "doctor_id": self.doctor_id,
+            "available_date": self.available_date.isoformat() if self.available_date else None,
+            "time_slot": self.time_slot,
+            "status": self.status,
+        })
+        return data
