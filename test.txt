@@ -1,0 +1,17 @@
+Admin
+----------------------------
+/get all doctors...............done
+/get all patients..............done
+
+/create doctor
+/update doctor
+/delete doctor
+/blacklist doctor
+
+/create patient
+/update patient
+/delete patient
+/blacklist patient
+
+/get all appoinments
+/view patients history

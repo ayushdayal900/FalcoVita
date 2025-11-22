@@ -3,7 +3,7 @@ import random
 from datetime import datetime, timedelta, timezone
 
 from faker import Faker
-from werkzeug.security import generate_password_hash
+from flask_security.utils import hash_password
 from backend.extensions import db
 from backend.models import (
     User, Role, UserRoles,
@@ -11,6 +11,7 @@ from backend.models import (
     Appointment, PatientHistory, Prescription, AvailabilitySlot
 )
 from backend.app import app  
+from flask_security.datastore import SQLAlchemyUserDatastore
 
 
 fake = Faker()
@@ -18,6 +19,7 @@ fake = Faker()
 def seed_data():
     with app.app_context():
         # Drop all tables and recreate
+        datastore : SQLAlchemyUserDatastore = app.datastore
 
         db.drop_all()
         db.create_all()
@@ -35,8 +37,8 @@ def seed_data():
         # Create Admin user
         admin_user = User(
             name="Admin User",
-            email="admin@hospital.com",
-            password=generate_password_hash("admin123"),
+            email="admin@iitm.ac.in",
+            password=hash_password("Admin@123"),
             role="admin",
             fs_uniquifier=str(uuid.uuid4())
         )

@@ -5,14 +5,11 @@
 from flask import Blueprint, request, jsonify, current_app as app
 from flask_security import login_user, logout_user, current_user
 from flask_security.utils import verify_and_update_password, hash_password
-from backend.models import User
+from backend.models import User, Doctor
 from backend.extensions import db
 
 
-
-
 auth_bp = Blueprint( 'auth', __name__, url_prefix='/api/auth')
-# api_bp = Blueprint( 'api', __name__, url_prefix='/api')
 
 
 @auth_bp.route('/login1', methods=['POST'])
@@ -22,8 +19,10 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
+
     if not email or not password:
         return jsonify({'message': 'Email and password are required'}), 400
+
 
 
     user = app.datastore.find_user(email=email)
@@ -54,52 +53,52 @@ def register():
     contact_number = data.get('contact_number')
     role = data.get('role')
 
-    active = True
+    # extra fields needed for doctor table
+    department_id = data.get('department_id')
+    specialization = data.get('specialization')
+    qualifications = data.get('qualifications')
+    experience = data.get('experience')
 
-    # if patient then active true else False
+    if not name or not email or not password:
+        return jsonify({'message': 'Name, email, password required'}), 400
 
-    if not name or not email or not password or not role in ['patient', 'doctor']:
-        return jsonify({'message': 'Name, email, and password are required'}), 400
-    
-    if role == "doctor":
-        active = False
-
-    existing_user = app.datastore.find_user(email=email)
-    if existing_user:
-        return jsonify({'message': 'User with this email already exists'}), 409
-
-
-    # creatinng a user
+    # Create User entry
     user = app.datastore.create_user(
         name=name,
         email=email,
         password=hash_password(password),
         contact_number=contact_number,
         role=role,
-        active=active
+        active=(role != "doctor")
     )
-    try:
-        db.session.commit()
-    except:
-        return {'message': 'Error'}, 405
+    db.session.commit()
 
-    # assigning role to user
-    role = app.datastore.find_role(role)
-    user = app.datastore.find_user(email=email)
-    app.datastore.add_role_to_user(user, role)
-    try:
+    # Assign role
+    role_obj = app.datastore.find_role(role)
+    app.datastore.add_role_to_user(user, role_obj)
+    db.session.commit()
+
+    # Create doctor entry if role == doctor
+    if role == "doctor":
+        if not (department_id and specialization and qualifications and experience):
+            return {'message': 'Missing doctor-specific fields'}, 400
+
+        new_doctor = Doctor(
+            id=user.id,   # IMPORTANT → same ID as user
+            department_id=department_id,
+            specialization=specialization,
+            qualifications=qualifications,
+            experience=experience
+        )
+        db.session.add(new_doctor)
         db.session.commit()
-    except:
-        return {'message': 'Error'}, 405
 
     return jsonify({
-        'message': 'User registered successfully', 
+        'message': 'User registered successfully',
         'id': user.id,
         'email': user.email,
-        'name': user.name,
-        'role': role.name
-
-        }), 201
+        'role': role
+    }), 201
 
 
 # @auth_bp.route("/users")
@@ -117,5 +116,4 @@ def register():
 #             "role": user.role
 #         }
 #     return jsonify(d), 200
-
 # 

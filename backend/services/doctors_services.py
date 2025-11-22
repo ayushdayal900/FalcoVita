@@ -4,13 +4,12 @@ from backend.extensions import db
 
 class DoctorService:
 
-    
     @staticmethod
     def get_by_email(email):
         return User.query.filter_by(email=email).first()
 
     def get_by_id(id):
-        return User.query.filter_by(id=id).first()
+        return Doctor.query.filter_by(id=id).first()
 
     @staticmethod
     def get_all():
@@ -72,4 +71,4 @@ class DoctorService:
         
         db.session.commit()
         return doctor
-    
+        

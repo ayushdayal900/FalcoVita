@@ -29,8 +29,8 @@ class User(BaseModel, UserMixin):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(255), nullable=False)
-    
     contact_number = db.Column(db.String(15), nullable=True)
+    blacklisted = db.Column(db.Boolean, default=False)
 
     # One-to-one with Doctor & Patient
     doctor = db.relationship('Doctor', back_populates='user', uselist=False)
