@@ -1,2 +1,3 @@
 from backend.services.doctors_services import DoctorService
+from backend.services.patients_services import PatientService
 from backend.services.service_errors import ServiceError

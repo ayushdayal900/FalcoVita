@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 from backend.config import DevelopmentConfig
-from backend.resources import auth_bp, api_bp, api, doctor_bp
+from backend.resources import auth_bp, api_bp, api, doctor_bp, patient_bp
 
 
 def create_app():
@@ -23,6 +23,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(doctor_bp)
+    app.register_blueprint(patient_bp)
 
     # Initialize API
     api.init_app(app)

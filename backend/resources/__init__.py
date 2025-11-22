@@ -1,5 +1,6 @@
 from .auth_resource import auth_bp
 from .doctors_resource import doctor_bp
+from .patients_resource import patient_bp
 
 from flask import Blueprint
 from flask_restful import Api
@@ -11,5 +12,6 @@ __all__ = [
     "auth_bp",
     "api_bp",
     "api",
-    "doctor_bp"
+    "doctor_bp",
+    "patient_bp"
 ]
