@@ -1,0 +1,109 @@
+<template>
+  <aside class="sidebar flex flex-col w-64 border-r border-slate-200 bg-white">
+    <div class="p-6 border-b border-slate-100">
+      <h1 class="text-xl font-bold text-primary">FalcoVita</h1>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-2">
+      <router-link to="/dashboard" class="nav-item" active-class="active">
+        Dashboard
+      </router-link>
+      
+      <div v-if="userRole === 'doctor'">
+        <router-link to="/appointments" class="nav-item" active-class="active">
+          My Appointments
+        </router-link>
+        <router-link to="/patients" class="nav-item" active-class="active">
+          My Patients
+        </router-link>
+      </div>
+
+      <div v-if="userRole === 'patient'">
+        <router-link to="/doctors" class="nav-item" active-class="active">
+          Find Doctors
+        </router-link>
+        <router-link to="/history" class="nav-item" active-class="active">
+          Medical History
+        </router-link>
+      </div>
+    </nav>
+
+    <div class="p-4 border-t border-slate-100">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="avatar bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold">
+          {{ userInitials }}
+        </div>
+        <div class="overflow-hidden">
+          <p class="text-sm font-medium truncate">{{ userName }}</p>
+          <p class="text-xs text-muted capitalize">{{ userRole }}</p>
+        </div>
+      </div>
+      <button @click="logout" class="btn btn-outline w-full text-sm">
+        Sign Out
+      </button>
+    </div>
+  </aside>
+</template>
+
+<script setup>
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+
+const store = useStore();
+
+const user = computed(() => store.getters.currentUser);
+const userRole = computed(() => store.getters.userRole);
+const userName = computed(() => user.value?.name || 'User');
+
+const userInitials = computed(() => {
+  const name = userName.value;
+  return name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
+});
+
+const logout = () => {
+  store.dispatch('logout');
+};
+</script>
+
+<style scoped>
+.sidebar {
+  width: 260px;
+  background-color: var(--bg-card);
+}
+
+.nav-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.nav-item:hover {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background-color: #e0e7ff; /* Indigo 50 */
+  color: var(--primary);
+}
+
+.avatar {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.border-r { border-right-width: 1px; }
+.border-b { border-bottom-width: 1px; }
+.border-t { border-top-width: 1px; }
+.border-slate-200 { border-color: #e2e8f0; }
+.border-slate-100 { border-color: #f1f5f9; }
+.bg-white { background-color: #ffffff; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.capitalize { text-transform: capitalize; }
+</style>

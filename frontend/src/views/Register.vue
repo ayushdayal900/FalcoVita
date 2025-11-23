@@ -1,189 +1,204 @@
 <template>
-  <div class="auth-container">
-    <h2>Register</h2>
-
-    <form @submit.prevent="handleRegister">
-
-      <input
-        v-model="form.name"
-        type="text"
-        placeholder="Full Name"
-        required
-      />
-
-      <input
-        v-model="form.email"
-        type="email"
-        placeholder="Email"
-        required
-      />
-
-      <input
-        v-model="form.password"
-        type="password"
-        placeholder="Password"
-        required
-      />
-
-      <input
-        v-model="form.contact_number"
-        type="text"
-        placeholder="Contact Number"
-      />
-
-      <!-- Role dropdown -->
-      <select v-model="form.role" required>
-        <option disabled value="">Select Role</option>
-        <option value="doctor">Doctor</option>
-        <option value="patient">Patient</option>
-      </select>
-
-      <!-- Doctor Fields -->
-      <div v-if="form.role === 'doctor'">
-        <input
-          v-model="form.department_id"
-          type="number"
-          placeholder="Department ID"
-          required
-        />
-
-        <input
-          v-model="form.specialization"
-          type="text"
-          placeholder="Specialization"
-          required
-        />
-
-        <input
-          v-model="form.qualifications"
-          type="text"
-          placeholder="Qualifications"
-          required
-        />
-
-        <input
-          v-model="form.experience"
-          type="number"
-          placeholder="Experience (years)"
-          required
-        />
+  <div class="auth-container flex items-center justify-center min-h-screen py-10">
+    <div class="card auth-card fade-enter-active">
+      <div class="text-center mb-6">
+        <h1 class="text-xl font-bold text-primary">Create Account</h1>
+        <p class="text-sm text-muted">Join FalcoVita today</p>
       </div>
 
-      <!-- Patient Fields -->
-      <div v-if="form.role === 'patient'">
-        <input v-model="form.dob" type="date" required />
+      <form @submit.prevent="handleRegister">
+        <!-- Role Selection -->
+        <div class="flex justify-center gap-4 mb-6">
+          <button 
+            type="button" 
+            class="role-btn" 
+            :class="{ active: role === 'patient' }"
+            @click="role = 'patient'"
+          >
+            Patient
+          </button>
+          <button 
+            type="button" 
+            class="role-btn" 
+            :class="{ active: role === 'doctor' }"
+            @click="role = 'doctor'"
+          >
+            Doctor
+          </button>
+        </div>
 
-        <input
-          v-model="form.contact"
-          type="text"
-          placeholder="Contact"
-          required
-        />
+        <!-- Common Fields -->
+        <div class="grid grid-cols-1 gap-4 mb-4">
+          <div class="form-group">
+            <label class="label">Full Name</label>
+            <input type="text" v-model="form.name" class="input" required />
+          </div>
+          
+          <div class="form-group">
+            <label class="label">Email Address</label>
+            <input type="email" v-model="form.email" class="input" required />
+          </div>
 
-        <input
-          v-model="form.medical_record_number"
-          type="text"
-          placeholder="Medical Record Number"
-          required
-        />
+          <div class="form-group">
+            <label class="label">Password</label>
+            <input type="password" v-model="form.password" class="input" required />
+          </div>
 
-        <input
-          v-model="form.doctor_id"
-          type="number"
-          placeholder="Doctor ID (optional)"
-        />
+          <div class="form-group">
+            <label class="label">Contact Number</label>
+            <input type="text" v-model="form.contact_number" class="input" />
+          </div>
+        </div>
+
+        <!-- Doctor Specific Fields -->
+        <div v-if="role === 'doctor'" class="doctor-fields grid grid-cols-1 gap-4 mb-4 fade-enter-active">
+          <div class="form-group">
+            <label class="label">Department ID</label>
+            <input type="number" v-model="form.department_id" class="input" required />
+          </div>
+          <div class="form-group">
+            <label class="label">Specialization</label>
+            <input type="text" v-model="form.specialization" class="input" required />
+          </div>
+          <div class="form-group">
+            <label class="label">Qualifications</label>
+            <input type="text" v-model="form.qualifications" class="input" required />
+          </div>
+          <div class="form-group">
+            <label class="label">Experience (Years)</label>
+            <input type="number" v-model="form.experience" class="input" required />
+          </div>
+        </div>
+
+        <!-- Patient Specific Fields -->
+        <div v-if="role === 'patient'" class="patient-fields grid grid-cols-1 gap-4 mb-4 fade-enter-active">
+          <div class="form-group">
+            <label class="label">Date of Birth</label>
+            <input type="date" v-model="form.dob" class="input" required />
+          </div>
+          <div class="form-group">
+            <label class="label">Medical Record Number</label>
+            <input type="text" v-model="form.medical_record_number" class="input" required />
+          </div>
+          <!-- Optional Doctor Selection could go here -->
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full mt-2" :disabled="loading">
+          {{ loading ? 'Creating Account...' : 'Register' }}
+        </button>
+      </form>
+
+      <div class="mt-4 text-center text-sm">
+        <span class="text-muted">Already have an account? </span>
+        <router-link to="/login" class="text-primary font-medium hover:underline">Sign In</router-link>
       </div>
 
-      <button type="submit">Register</button>
-    </form>
-
-    <p>
-      Already have an account?
-      <router-link to="/login">Login</router-link>
-    </p>
-
-    <p v-if="error" class="error">{{ error }}</p>
+      <div v-if="error" class="mt-4 p-2 text-sm text-center text-red-500 bg-red-50 rounded">
+        {{ error }}
+      </div>
+    </div>
   </div>
 </template>
 
-<script>
-import { mapActions } from "vuex";
+<script setup>
+import { ref, reactive } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
-export default {
-  name: "Register",
+const store = useStore();
+const router = useRouter();
 
-  data() {
-    return {
-      form: {
-        name: "",
-        email: "",
-        password: "",
-        contact_number: "",
-        role: "",
+const role = ref('patient');
+const loading = ref(false);
+const error = ref('');
 
-        // Doctor Fields
-        department_id: "",
-        specialization: "",
-        qualifications: "",
-        experience: "",
+const form = reactive({
+  name: '',
+  email: '',
+  password: '',
+  contact_number: '',
+  // Doctor
+  department_id: '',
+  specialization: '',
+  qualifications: '',
+  experience: '',
+  // Patient
+  dob: '',
+  medical_record_number: '',
+});
 
-        // Patient Fields
-        dob: "",
-        contact: "",
-        medical_record_number: "",
-        doctor_id: "",
-      },
-      error: "",
-    };
-  },
+const handleRegister = async () => {
+  loading.value = true;
+  error.value = '';
 
-  methods: {
-    ...mapActions("auth", ["register"]),
+  const payload = {
+    role: role.value,
+    name: form.name,
+    email: form.email,
+    password: form.password,
+    contact_number: form.contact_number,
+  };
 
-    async handleRegister() {
-      this.error = "";
+  if (role.value === 'doctor') {
+    Object.assign(payload, {
+      department_id: form.department_id,
+      specialization: form.specialization,
+      qualifications: form.qualifications,
+      experience: form.experience,
+    });
+  } else {
+    Object.assign(payload, {
+      dob: form.dob,
+      contact: form.contact_number, // Backend expects 'contact' for patient
+      medical_record_number: form.medical_record_number,
+    });
+  }
 
-      try {
-        await this.register(this.form);
-
-        alert("Registration Successful!");
-        this.$router.push("/login");
-      } catch (err) {
-        this.error =
-          err.response?.data?.message || "Registration failed. Try again.";
-      }
-    },
-  },
+  try {
+    await store.dispatch('register', payload);
+    // Redirect to login after successful registration
+    router.push('/login');
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Registration failed.';
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
 <style scoped>
 .auth-container {
-  max-width: 350px;
-  margin: 100px auto;
-  padding: 20px;
-  text-align: center;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
-input,
-select {
-  width: 90%;
-  padding: 10px;
-  margin: 10px auto;
-  display: block;
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
 }
 
-button {
-  width: 95%;
-  padding: 10px;
-  margin-top: 10px;
-  cursor: pointer;
+.role-btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 2rem;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.2s;
 }
 
-.error {
-  color: red;
-  margin-top: 12px;
+.role-btn.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
 }
+
+.min-h-screen { min-height: 100vh; }
+.py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.text-red-500 { color: #ef4444; }
+.bg-red-50 { background-color: #fef2f2; }
+.rounded { border-radius: var(--radius-sm); }
+.hover\:underline:hover { text-decoration: underline; }
 </style>

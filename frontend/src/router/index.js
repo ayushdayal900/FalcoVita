@@ -1,17 +1,82 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from 'vue-router';
+import store from '@/store';
 
-import Login from "../views/Login.vue";
-import Register from "../views/Register.vue";
-import Dashboard from "../views/Dashboard.vue";
+import Login from '@/views/Login.vue';
+import Register from '@/views/Register.vue';
+import Dashboard from '@/views/Dashboard.vue';
 
 const routes = [
-  { path: "/", redirect: "/login" },
-  { path: "/login", component: Login },
-  { path: "/register", component: Register },
-  { path: "/dashboard", component: Dashboard },
+    {
+        path: '/',
+        redirect: '/dashboard',
+    },
+    {
+        path: '/login',
+        name: 'Login',
+        component: Login,
+        meta: { guest: true },
+    },
+    {
+        path: '/register',
+        name: 'Register',
+        component: Register,
+        meta: { guest: true },
+    },
+    {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: Dashboard,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/doctors',
+        name: 'Doctors',
+        component: () => import('@/views/DoctorsList.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/patients',
+        name: 'Patients',
+        component: () => import('@/views/PatientsList.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/appointments',
+        name: 'Appointments',
+        component: () => import('@/views/Appointments.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/history',
+        name: 'History',
+        component: () => import('@/views/PatientHistory.vue'),
+        meta: { requiresAuth: true },
+    },
 ];
 
-export default createRouter({
-  history: createWebHistory(),
-  routes
+const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes,
 });
+
+router.beforeEach((to, from, next) => {
+    const isAuthenticated = store.getters.isAuthenticated;
+
+    if (to.matched.some((record) => record.meta.requiresAuth)) {
+        if (!isAuthenticated) {
+            next('/login');
+        } else {
+            next();
+        }
+    } else if (to.matched.some((record) => record.meta.guest)) {
+        if (isAuthenticated) {
+            next('/dashboard');
+        } else {
+            next();
+        }
+    } else {
+        next();
+    }
+});
+
+export default router;
