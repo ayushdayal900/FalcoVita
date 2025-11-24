@@ -1,16 +1,5 @@
 <template>
   <div class="dashboard-layout flex h-screen overflow-hidden">
-    <!-- Sidebar (Reused or Component) - For now, I'll copy the sidebar structure or better, I should have made a layout. 
-         To save time and complexity, I will assume the Dashboard Layout is used as a wrapper or I'll just duplicate the sidebar for now 
-         since I didn't create a Layout component yet. 
-         Actually, I'll create a Layout component now to avoid duplication. -->
-    
-    <!-- I'll use the Dashboard.vue as the layout and use nested routes, but I defined routes as flat.
-         I'll just duplicate the sidebar code for this task to ensure it works standalone, 
-         or better, I'll refactor Dashboard to be a layout. 
-         
-         Let's stick to the plan: I'll create a Layout component first. -->
-         
     <Sidebar />
     
     <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
@@ -63,9 +52,9 @@
                 </p>
               </div>
 
-              <button @click="$router.push('/appointments')" class="btn btn-primary w-full mt-auto">
-                Book Appointment
-              </button>
+              <router-link :to="`/doctors/${doctor.id}`" class="btn btn-primary w-full mt-auto text-center">
+                View Profile & Book
+              </router-link>
             </div>
           </div>
 
@@ -77,7 +66,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import Sidebar from '@/components/Sidebar.vue'; // I need to create this
+import Sidebar from '@/components/Sidebar.vue';
 import api from '@/services/api';
 
 const doctors = ref([]);
@@ -99,8 +88,8 @@ const filteredDoctors = computed(() => {
   if (!search.value) return doctors.value;
   const term = search.value.toLowerCase();
   return doctors.value.filter(doc => 
-    (doc.user?.name?.toLowerCase().includes(term)) || 
-    (doc.specialization?.toLowerCase().includes(term))
+    (doc.user?.name && doc.user.name.toLowerCase().includes(term)) ||
+    (doc.specialization && doc.specialization.toLowerCase().includes(term))
   );
 });
 
@@ -110,5 +99,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.bg-primary\/10 { background-color: rgba(99, 102, 241, 0.1); }
+.text-main { color: #1e293b; }
+.text-muted { color: #64748b; }
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  border: 1px solid #e2e8f0;
+}
+.input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  outline: none;
+}
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
 </style>

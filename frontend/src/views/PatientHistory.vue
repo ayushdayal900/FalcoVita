@@ -52,16 +52,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useStore } from 'vuex';
 import Sidebar from '@/components/Sidebar.vue';
 import api from '@/services/api';
 
+const store = useStore();
 const history = ref([]);
 const loading = ref(true);
+const currentUser = computed(() => store.getters.currentUser);
 
 const fetchHistory = async () => {
   try {
-    const response = await api.get('/history/');
+    if (!currentUser.value) return;
+    // Fetch history for the specific patient
+    const response = await api.get(`/history/patient/${currentUser.value.id}`);
     history.value = response.data;
   } catch (err) {
     console.error('Failed to fetch history', err);
@@ -72,8 +77,8 @@ const fetchHistory = async () => {
 
 const exportHistory = async () => {
   try {
-    // Assuming patient ID 1 for demo or extract from auth
-    await api.post('/history/export/1');
+    if (!currentUser.value) return;
+    await api.post(`/history/export/${currentUser.value.id}`);
     alert('Export started! You will receive an email shortly.');
   } catch (err) {
     console.error('Export failed', err);
@@ -85,3 +90,14 @@ onMounted(() => {
   fetchHistory();
 });
 </script>
+
+<style scoped>
+.text-main { color: #1e293b; }
+.text-muted { color: #64748b; }
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  border: 1px solid #e2e8f0;
+}
+</style>

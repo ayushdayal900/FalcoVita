@@ -6,6 +6,9 @@
       <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
         <h2 class="text-lg font-medium">Admin Dashboard</h2>
         <div class="flex gap-2">
+          <button @click="showDoctorModal = true" class="btn btn-primary text-sm">
+            Add New Doctor
+          </button>
           <button @click="showDepartmentModal = true" class="btn btn-outline text-sm">
             Manage Departments
           </button>
@@ -15,21 +18,21 @@
       <div class="flex-1 overflow-auto p-6">
         <div class="container mx-auto">
           
-          <!-- Statistics Cards -->
+          <!-- Statistics Cards (Clickable) -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="card p-6">
+            <div class="card p-6 cursor-pointer hover:shadow-xl transition-shadow" @click="showDoctorsList">
               <h3 class="text-sm font-medium text-muted mb-2">Total Doctors</h3>
               <p class="text-3xl font-bold text-primary">{{ stats.total_doctors }}</p>
             </div>
-            <div class="card p-6">
+            <div class="card p-6 cursor-pointer hover:shadow-xl transition-shadow" @click="showPatientsList">
               <h3 class="text-sm font-medium text-muted mb-2">Total Patients</h3>
               <p class="text-3xl font-bold text-secondary">{{ stats.total_patients }}</p>
             </div>
-            <div class="card p-6">
+            <div class="card p-6 cursor-pointer hover:shadow-xl transition-shadow" @click="showAllAppointments">
               <h3 class="text-sm font-medium text-muted mb-2">Total Appointments</h3>
               <p class="text-3xl font-bold">{{ stats.total_appointments }}</p>
             </div>
-            <div class="card p-6">
+            <div class="card p-6 cursor-pointer hover:shadow-xl transition-shadow" @click="showUpcomingAppointments">
               <h3 class="text-sm font-medium text-muted mb-2">Upcoming</h3>
               <p class="text-3xl font-bold text-green-600">{{ stats.upcoming_appointments }}</p>
             </div>
@@ -42,10 +45,11 @@
                 type="text" 
                 v-model="searchQuery" 
                 placeholder="Search doctors or patients..." 
-                class="input flex-1"
+                class="input"
+                style="min-width: 400px; flex: 1;"
                 @keyup.enter="performSearch"
               />
-              <select v-model="searchType" class="input w-40">
+              <select v-model="searchType" class="input" style="width: 120px;">
                 <option value="all">All</option>
                 <option value="doctor">Doctors</option>
                 <option value="patient">Patients</option>
@@ -112,7 +116,7 @@
             <div class="card p-6">
               <h3 class="text-lg font-bold mb-4">Appointments</h3>
               <p class="text-muted text-sm mb-4">View all appointments system-wide</p>
-              <router-link to="/appointments" class="btn btn-primary w-full text-sm">
+              <router-link to="/admin/appointments" class="btn btn-primary w-full text-sm">
                 View All
               </router-link>
             </div>
@@ -123,7 +127,7 @@
 
     <!-- Department Modal -->
     <div v-if="showDepartmentModal" class="modal-overlay">
-      <div class="card bg-white w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto">
+      <div class="card bg-white w-full max-w-2xl p-6 max-h-80vh overflow-y-auto">
         <h3 class="text-lg font-bold mb-4">Manage Departments</h3>
         
         <!-- Add Department Form -->
@@ -155,13 +159,70 @@
       </div>
     </div>
 
+    <!-- Add Doctor Modal -->
+    <div v-if="showDoctorModal" class="modal-overlay">
+      <div class="card bg-white w-full max-w-2xl p-6 max-h-80vh overflow-y-auto">
+        <h3 class="text-lg font-bold mb-4">Add New Doctor</h3>
+        
+        <form @submit.prevent="createDoctor" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="label">Full Name</label>
+              <input v-model="newDoctor.name" class="input" required />
+            </div>
+            <div class="form-group">
+              <label class="label">Email</label>
+              <input type="email" v-model="newDoctor.email" class="input" required />
+            </div>
+            <div class="form-group">
+              <label class="label">Password</label>
+              <input type="password" v-model="newDoctor.password" class="input" required />
+            </div>
+            <div class="form-group">
+              <label class="label">Contact Number</label>
+              <input v-model="newDoctor.contact_number" class="input" required />
+            </div>
+            <div class="form-group">
+              <label class="label">Department</label>
+              <select v-model="newDoctor.department_id" class="input" required>
+                <option value="">Select Department</option>
+                <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+                  {{ dept.name }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label">Specialization</label>
+              <input v-model="newDoctor.specialization" class="input" required />
+            </div>
+            <div class="form-group">
+              <label class="label">Qualifications</label>
+              <input v-model="newDoctor.qualifications" class="input" required />
+            </div>
+            <div class="form-group">
+              <label class="label">Experience (Years)</label>
+              <input type="number" v-model="newDoctor.experience" class="input" required />
+            </div>
+          </div>
+          
+          <div class="flex gap-4 mt-6">
+            <button type="button" @click="showDoctorModal = false" class="btn btn-outline flex-1">Cancel</button>
+            <button type="submit" class="btn btn-primary flex-1">Create Doctor</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
+import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
 import api from '@/services/api';
+
+const router = useRouter();
 
 const stats = ref({
   total_doctors: 0,
@@ -175,8 +236,20 @@ const searchType = ref('all');
 const searchResults = ref(null);
 
 const showDepartmentModal = ref(false);
+const showDoctorModal = ref(false);
 const departments = ref([]);
 const newDept = ref({ name: '', overview: '' });
+
+const newDoctor = reactive({
+  name: '',
+  email: '',
+  password: '',
+  contact_number: '',
+  department_id: '',
+  specialization: '',
+  qualifications: '',
+  experience: ''
+});
 
 const fetchStats = async () => {
   try {
@@ -219,6 +292,19 @@ const addDepartment = async () => {
   }
 };
 
+const createDoctor = async () => {
+  try {
+    await api.post('/admin/doctors', newDoctor);
+    alert('Doctor created successfully');
+    showDoctorModal.value = false;
+    // Reset form
+    Object.keys(newDoctor).forEach(key => newDoctor[key] = '');
+    fetchStats();
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to create doctor');
+  }
+};
+
 const deleteDepartment = async (id) => {
   if (!confirm('Delete this department?')) return;
   try {
@@ -251,26 +337,25 @@ const deletePatient = async (id) => {
   }
 };
 
+// Navigate to specific lists
+const showDoctorsList = () => {
+  router.push('/admin/doctors');
+};
+
+const showPatientsList = () => {
+  router.push('/admin/patients');
+};
+
+const showAllAppointments = () => {
+  router.push('/admin/appointments');
+};
+
+const showUpcomingAppointments = () => {
+  router.push('/admin/appointments?filter=upcoming');
+};
+
 onMounted(() => {
   fetchStats();
   fetchDepartments();
 });
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 1rem;
-}
-
-.text-secondary { color: var(--secondary); }
-.text-green-600 { color: #16a34a; }
-.text-red-500 { color: #ef4444; }
-.max-h-\[80vh\] { max-height: 80vh; }
-</style>

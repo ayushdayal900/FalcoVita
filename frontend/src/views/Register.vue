@@ -168,14 +168,17 @@ const handleRegister = async () => {
 
 <style scoped>
 .auth-container {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
 }
 
 .auth-card {
   width: 100%;
   max-width: 500px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-xl);
 }
 
 .role-btn {
@@ -185,20 +188,19 @@ const handleRegister = async () => {
   font-weight: 500;
   color: var(--text-muted);
   transition: all 0.2s;
+  background: white;
+}
+
+.role-btn:hover {
+  border-color: var(--primary-400);
+  color: var(--primary-600);
 }
 
 .role-btn.active {
-  background-color: var(--primary);
+  background-color: var(--primary-600);
   color: white;
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--primary-600);
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
 }
-
-.min-h-screen { min-height: 100vh; }
-.py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
-.mt-2 { margin-top: 0.5rem; }
-.text-red-500 { color: #ef4444; }
-.bg-red-50 { background-color: #fef2f2; }
-.rounded { border-radius: var(--radius-sm); }
-.hover\:underline:hover { text-decoration: underline; }
 </style>

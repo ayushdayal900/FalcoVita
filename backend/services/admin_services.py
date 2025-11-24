@@ -2,6 +2,7 @@ from backend.models import User, Doctor, Patient
 from backend.services.service_errors import ServiceError
 from backend.extensions import db
 from datetime import datetime
+import uuid
 
 
 class AdminService:
@@ -37,7 +38,8 @@ class AdminService:
             email=data['email'],
             password=data['password'],  # hash in real world
             role='doctor',
-            contact_number=data.get('contact_number')
+            contact_number=data.get('contact_number'),
+            fs_uniquifier=str(uuid.uuid4())
         )
 
         db.session.add(new_user)
@@ -64,7 +66,8 @@ class AdminService:
             email=data['email'],
             password=data['password'],
             role='patient',
-            contact_number=data.get('contact_number')
+            contact_number=data.get('contact_number'),
+            fs_uniquifier=str(uuid.uuid4())
         )
 
         db.session.add(new_user)

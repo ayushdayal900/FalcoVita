@@ -17,12 +17,12 @@
             <p class="text-muted">Loading appointments...</p>
           </div>
 
-          <div v-else-if="appointments.length === 0" class="text-center py-10">
+          <div v-else-if="filteredAppointments.length === 0" class="text-center py-10">
             <p class="text-muted">No appointments found.</p>
           </div>
 
           <div v-else class="space-y-4">
-            <div v-for="appt in appointments" :key="appt.id" class="card p-4 flex items-center justify-between">
+            <div v-for="appt in filteredAppointments" :key="appt.id" class="card p-4 flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-muted font-bold">
                   {{ getInitials(appt) }}
@@ -90,6 +90,7 @@ import api from '@/services/api';
 
 const store = useStore();
 const userRole = computed(() => store.getters.userRole);
+const currentUser = computed(() => store.getters.currentUser);
 
 const appointments = ref([]);
 const doctors = ref([]); // For booking dropdown
@@ -99,6 +100,18 @@ const showBookModal = ref(false);
 const newAppt = ref({
   doctor_id: '',
   date: ''
+});
+
+const filteredAppointments = computed(() => {
+  if (!currentUser.value) return [];
+  return appointments.value.filter(appt => {
+    if (userRole.value === 'patient') {
+      return appt.patient_id === currentUser.value.id;
+    } else if (userRole.value === 'doctor') {
+      return appt.doctor_id === currentUser.value.id;
+    }
+    return false;
+  });
 });
 
 const fetchAppointments = async () => {

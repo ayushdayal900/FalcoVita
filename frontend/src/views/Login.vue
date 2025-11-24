@@ -2,7 +2,7 @@
   <div class="auth-container flex items-center justify-center h-screen">
     <div class="card auth-card fade-enter-active">
       <div class="text-center mb-6">
-        <h1 class="text-xl font-bold text-primary">FalcoVita</h1>
+        <h1 class="text-xl font-bold text-primary">FalcoVita Hospital</h1>
         <p class="text-sm text-muted">Sign in to your account</p>
       </div>
 
@@ -81,21 +81,16 @@ const handleLogin = async () => {
 
 <style scoped>
 .auth-container {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
 }
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-xl);
 }
-
-.mb-4 { margin-bottom: 1rem; }
-.mb-6 { margin-bottom: 1.5rem; }
-.mt-4 { margin-top: 1rem; }
-.text-red-500 { color: #ef4444; }
-.bg-red-50 { background-color: #fef2f2; }
-.rounded { border-radius: var(--radius-sm); }
-.hover\:underline:hover { text-decoration: underline; }
 </style>

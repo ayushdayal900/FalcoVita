@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar flex flex-col w-64 border-r border-slate-200 bg-white">
+  <aside class="sidebar flex flex-col border-r border-slate-200 bg-white">
     <div class="p-6 border-b border-slate-100">
       <h1 class="text-xl font-bold text-primary">FalcoVita</h1>
       <p class="text-xs text-muted mt-1">Hospital Management</p>
@@ -91,50 +91,65 @@ const logout = () => {
 
 <style scoped>
 .sidebar {
-  width: 260px;
+  width: 280px;
   background-color: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  z-index: 20;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
+  gap: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: var(--radius-lg);
   color: var(--text-muted);
   font-weight: 500;
-  transition: all 0.2s;
-  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
 }
 
 .nav-item span {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
 .nav-item:hover {
-  background-color: #f1f5f9;
-  color: var(--text-main);
+  background-color: var(--slate-50);
+  color: var(--slate-900);
+}
+
+.nav-item:hover span {
+  opacity: 1;
 }
 
 .nav-item.active {
-  background-color: #e0e7ff;
-  color: var(--primary);
+  background-color: var(--primary-50);
+  color: var(--primary-700);
+  font-weight: 600;
+}
+
+.nav-item.active span {
+  opacity: 1;
 }
 
 .avatar {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+  box-shadow: var(--shadow-md);
 }
 
 .space-y-2 > * + * {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .border-r { border-right-width: 1px; }
 .border-b { border-bottom-width: 1px; }
 .border-t { border-top-width: 1px; }
-.border-slate-200 { border-color: #e2e8f0; }
-.border-slate-100 { border-color: #f1f5f9; }
-.bg-white { background-color: #ffffff; }
+.border-slate-200 { border-color: var(--slate-200); }
+.border-slate-100 { border-color: var(--slate-100); }
+.bg-white { background-color: var(--bg-card); }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .capitalize { text-transform: capitalize; }
 .overflow-y-auto { overflow-y: auto; }

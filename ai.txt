@@ -1,2 +1,8 @@
 database seed file
 database init file
+
+
+
+i have enhance frontend fo this project.
+please correct the api calls and developed the backend and frontend completely correct.
+
