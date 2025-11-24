@@ -5,7 +5,9 @@ from .appointment_resource import appointment_bp
 from .availability_slots_resource import availability_bp
 from .patient_history_resources import history_bp
 from .prescription_resources import prescription_bp
-
+from .admin_resource import admin_bp
+from .department_resource import department_bp
+from .export_resource import export_bp
 
 from flask import Blueprint
 from flask_restful import Api
@@ -23,4 +25,7 @@ __all__ = [
     "availability_bp",
     "history_bp",
     "prescription_bp",
+    "admin_bp",
+    "department_bp",
+    "export_bp"
 ]

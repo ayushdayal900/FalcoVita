@@ -5,6 +5,9 @@
     <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
       <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
         <h2 class="text-lg font-medium">Medical History</h2>
+        <button @click="exportHistory" class="btn btn-primary text-sm">
+          Export CSV
+        </button>
       </header>
 
       <div class="flex-1 overflow-auto p-6">
@@ -64,6 +67,17 @@ const fetchHistory = async () => {
     console.error('Failed to fetch history', err);
   } finally {
     loading.value = false;
+  }
+};
+
+const exportHistory = async () => {
+  try {
+    // Assuming patient ID 1 for demo or extract from auth
+    await api.post('/history/export/1');
+    alert('Export started! You will receive an email shortly.');
+  } catch (err) {
+    console.error('Export failed', err);
+    alert('Failed to start export.');
   }
 };
 

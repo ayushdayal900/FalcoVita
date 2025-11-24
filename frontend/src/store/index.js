@@ -11,6 +11,9 @@ export default createStore({
         isAuthenticated: (state) => !!state.token,
         currentUser: (state) => state.user,
         userRole: (state) => state.role,
+        isAdmin: (state) => state.role === 'admin',
+        isDoctor: (state) => state.role === 'doctor',
+        isPatient: (state) => state.role === 'patient',
     },
     mutations: {
         SET_USER(state, user) {
@@ -36,11 +39,20 @@ export default createStore({
         async login({ commit }, credentials) {
             try {
                 const response = await api.post('/auth/login', credentials);
-                const { token, ...user } = response.data;
-
-                commit('SET_TOKEN', token);
-                commit('SET_USER', user);
-                return response.data;
+                const data = response.data;
+                
+                // Backend returns: { message, id, email, name, role, token }
+                if (data.token) {
+                    commit('SET_TOKEN', data.token);
+                    commit('SET_USER', {
+                        id: data.id,
+                        email: data.email,
+                        name: data.name,
+                        role: data.role
+                    });
+                }
+                
+                return data;
             } catch (error) {
                 throw error;
             }
@@ -48,10 +60,8 @@ export default createStore({
         async register({ commit }, userData) {
             try {
                 const response = await api.post('/auth/register', userData);
-                // Note: Register usually doesn't return token immediately in some flows, 
-                // but if it does, we can set it. Based on backend analysis, it returns user info.
-                // We might need to login after register or if backend returns token, use it.
-                // Backend register returns: { message, id, email, role } - No token.
+                // Backend register returns: { message, id, email, role }
+                // User needs to login after registration
                 return response.data;
             } catch (error) {
                 throw error;

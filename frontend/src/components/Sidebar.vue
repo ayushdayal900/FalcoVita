@@ -2,30 +2,54 @@
   <aside class="sidebar flex flex-col w-64 border-r border-slate-200 bg-white">
     <div class="p-6 border-b border-slate-100">
       <h1 class="text-xl font-bold text-primary">FalcoVita</h1>
+      <p class="text-xs text-muted mt-1">Hospital Management</p>
     </div>
 
-    <nav class="flex-1 p-4 space-y-2">
-      <router-link to="/dashboard" class="nav-item" active-class="active">
-        Dashboard
-      </router-link>
-      
-      <div v-if="userRole === 'doctor'">
-        <router-link to="/appointments" class="nav-item" active-class="active">
-          My Appointments
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <!-- Admin Navigation -->
+      <template v-if="userRole === 'admin'">
+        <router-link to="/admin/dashboard" class="nav-item" active-class="active">
+          <span>📊</span> Admin Dashboard
+        </router-link>
+        <router-link to="/doctors" class="nav-item" active-class="active">
+          <span>👨‍⚕️</span> Manage Doctors
         </router-link>
         <router-link to="/patients" class="nav-item" active-class="active">
-          My Patients
+          <span>👥</span> Manage Patients
         </router-link>
-      </div>
+        <router-link to="/appointments" class="nav-item" active-class="active">
+          <span>📅</span> All Appointments
+        </router-link>
+      </template>
+      
+      <!-- Doctor Navigation -->
+      <template v-if="userRole === 'doctor'">
+        <router-link to="/dashboard" class="nav-item" active-class="active">
+          <span>📊</span> Dashboard
+        </router-link>
+        <router-link to="/appointments" class="nav-item" active-class="active">
+          <span>📅</span> My Appointments
+        </router-link>
+        <router-link to="/patients" class="nav-item" active-class="active">
+          <span>👥</span> My Patients
+        </router-link>
+      </template>
 
-      <div v-if="userRole === 'patient'">
+      <!-- Patient Navigation -->
+      <template v-if="userRole === 'patient'">
+        <router-link to="/dashboard" class="nav-item" active-class="active">
+          <span>🏠</span> Dashboard
+        </router-link>
         <router-link to="/doctors" class="nav-item" active-class="active">
-          Find Doctors
+          <span>🔍</span> Find Doctors
+        </router-link>
+        <router-link to="/appointments" class="nav-item" active-class="active">
+          <span>📅</span> My Appointments
         </router-link>
         <router-link to="/history" class="nav-item" active-class="active">
-          Medical History
+          <span>📋</span> Medical History
         </router-link>
-      </div>
+      </template>
     </nav>
 
     <div class="p-4 border-t border-slate-100">
@@ -33,7 +57,7 @@
         <div class="avatar bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold">
           {{ userInitials }}
         </div>
-        <div class="overflow-hidden">
+        <div class="overflow-hidden flex-1">
           <p class="text-sm font-medium truncate">{{ userName }}</p>
           <p class="text-xs text-muted capitalize">{{ userRole }}</p>
         </div>
@@ -72,12 +96,19 @@ const logout = () => {
 }
 
 .nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   color: var(--text-muted);
   font-weight: 500;
   transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.nav-item span {
+  font-size: 1.125rem;
 }
 
 .nav-item:hover {
@@ -86,7 +117,7 @@ const logout = () => {
 }
 
 .nav-item.active {
-  background-color: #e0e7ff; /* Indigo 50 */
+  background-color: #e0e7ff;
   color: var(--primary);
 }
 
@@ -106,4 +137,5 @@ const logout = () => {
 .bg-white { background-color: #ffffff; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .capitalize { text-transform: capitalize; }
+.overflow-y-auto { overflow-y: auto; }
 </style>

@@ -6,7 +6,13 @@ import os
 load_dotenv()
 
 from backend.config import DevelopmentConfig
-from backend.resources import auth_bp, api_bp, api, doctor_bp, patient_bp, appointment_bp, availability_bp, history_bp, prescription_bp
+from backend.resources import (
+    auth_bp, api_bp, api, doctor_bp, patient_bp, 
+    appointment_bp, availability_bp, history_bp, prescription_bp, admin_bp, department_bp, export_bp
+)
+
+
+# from backend.export_resource import export_bp
 from flask_cors import CORS
 
 def create_app():
@@ -29,8 +35,9 @@ def create_app():
     app.register_blueprint(availability_bp)
     app.register_blueprint(history_bp)
     app.register_blueprint(prescription_bp)
-    
-
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(department_bp)
+    app.register_blueprint(export_bp)
 
     # Initialize API
     api.init_app(app)
@@ -56,4 +63,4 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

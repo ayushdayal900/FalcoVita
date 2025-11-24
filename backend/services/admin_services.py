@@ -1,14 +1,14 @@
 from backend.models import User, Doctor, Patient
 from backend.services.service_errors import ServiceError
 from backend.extensions import db
+from datetime import datetime
+
 
 class AdminService:
 
-    @staticmethod
-    def get_user_by_name(name):
-        return User.query.filter_by(name=name).all()
-
-
+    # --------------------------------------------
+    # GET LISTS
+    # --------------------------------------------
     @staticmethod
     def get_all_doctors():
         doctors = User.query.filter_by(role='doctor').all()
@@ -24,18 +24,22 @@ class AdminService:
         return [patient.to_dict() for patient in patients]
 
 
+    # --------------------------------------------
+    # CREATE DOCTOR / PATIENT
+    # --------------------------------------------
     @staticmethod
     def create_doctor(data):
         if User.query.filter_by(email=data['email']).first():
-            raise ServiceError(f"User with email {data['email']} already exists")
-        
+            raise ServiceError("User with this email already exists")
+
         new_user = User(
             name=data['name'],
             email=data['email'],
-            password=data['password'],  # In real application, hash the password
+            password=data['password'],  # hash in real world
             role='doctor',
             contact_number=data.get('contact_number')
         )
+
         db.session.add(new_user)
         db.session.commit()
 
@@ -50,87 +54,107 @@ class AdminService:
         db.session.commit()
         return new_doctor
 
-
-
     @staticmethod
     def create_patient(data):
         if User.query.filter_by(email=data['email']).first():
-            raise ServiceError(f"User with email {data['email']} already exists")
-        
+            raise ServiceError("User with this email already exists")
+
         new_user = User(
             name=data['name'],
             email=data['email'],
-            password=data['password'],  # In real application, hash the password
+            password=data['password'],
             role='patient',
             contact_number=data.get('contact_number')
         )
+
         db.session.add(new_user)
         db.session.commit()
 
+        dob_val = data['dob']
+        if isinstance(dob_val, str):
+            dob_val = datetime.fromisoformat(dob_val)
+
         new_patient = Patient(
             id=new_user.id,
-            dob=data['dob'],
+            dob=dob_val,
             contact=data['contact'],
             medical_record_number=data['medical_record_number'],
             doctor_id=data.get('doctor_id')
         )
+
         db.session.add(new_patient)
         db.session.commit()
         return new_patient
 
 
-
+    # --------------------------------------------
+    # DELETE DOCTOR / PATIENT
+    # --------------------------------------------
     @staticmethod
     def delete_doctor_by_id(doctor_id):
-        doctor = User.query.filter_by(id=doctor_id, role='doctor').first()
-        if not doctor:
-            raise ServiceError(f"Doctor with id {doctor_id} not found")
-        db.session.delete(doctor)
+        doctor_user = User.query.filter_by(id=doctor_id, role='doctor').first()
+        if not doctor_user:
+            raise ServiceError("Doctor not found")
+        db.session.delete(doctor_user)
         db.session.commit()
-        return True
 
     @staticmethod
     def delete_patient_by_id(patient_id):
-        patient = User.query.filter_by(id=patient_id, role='patient').first()
-        if not patient:
-            raise ServiceError(f"Patient with id {patient_id} not found")
-        db.session.delete(patient)
+        patient_user = User.query.filter_by(id=patient_id, role='patient').first()
+        if not patient_user:
+            raise ServiceError("Patient not found")
+        db.session.delete(patient_user)
         db.session.commit()
-        return True
-    
+
+
+    # --------------------------------------------
+    # UPDATE DOCTOR
+    # --------------------------------------------
     @staticmethod
     def update_doctor(data):
         doctor = Doctor.query.filter_by(id=data.get('id')).first()
         if not doctor:
-            raise ServiceError(f"Doctor with id {data.get('id')} not found")    
-            
-        doctor.user.name = data.get('name', doctor.user.name)
-        doctor.user.email = data.get('email', doctor.user.email)
-        doctor.user.contact_number = data.get('contact_number', doctor.user.contact_number)
+            raise ServiceError("Doctor not found")
+
+        user = doctor.user
+
+        user.name = data.get('name', user.name)
+        user.email = data.get('email', user.email)
+        user.contact_number = data.get('contact_number', user.contact_number)
 
         doctor.department_id = data.get('department_id', doctor.department_id)
         doctor.specialization = data.get('specialization', doctor.specialization)
         doctor.qualifications = data.get('qualifications', doctor.qualifications)
         doctor.experience = data.get('experience', doctor.experience)
-        
+
         db.session.commit()
         return doctor
-    
+
+
+    # --------------------------------------------
+    # UPDATE PATIENT
+    # --------------------------------------------
     @staticmethod
     def update_patient(data):
         patient = Patient.query.filter_by(id=data.get('id')).first()
         if not patient:
-            raise ServiceError(f"Patient with id {data.get('id')} not found")
+            raise ServiceError("Patient not found")
 
-        patient.user.name = data.get('name', patient.user.name)
-        patient.user.email = data.get('email', patient.user.email)
-        patient.user.contact_number = data.get('contact_number', patient.user.contact_number)
+        user = patient.user
 
-        patient.dob = data.get('dob', patient.dob)
+        user.name = data.get('name', user.name)
+        user.email = data.get('email', user.email)
+        user.contact_number = data.get('contact_number', user.contact_number)
+
+        if "dob" in data:
+            dob_val = data["dob"]
+            if isinstance(dob_val, str):
+                dob_val = datetime.fromisoformat(dob_val)
+            patient.dob = dob_val
+
         patient.contact = data.get('contact', patient.contact)
         patient.medical_record_number = data.get('medical_record_number', patient.medical_record_number)
         patient.doctor_id = data.get('doctor_id', patient.doctor_id)
-        patient.experience = data.get('experience', patient.experience)
 
         db.session.commit()
         return patient

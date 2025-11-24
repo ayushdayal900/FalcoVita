@@ -13,7 +13,8 @@ class DoctorService:
 
     @staticmethod
     def get_all():
-        doctors = User.query.filter_by(role='doctor').all()
+        from sqlalchemy.orm import joinedload
+        doctors = Doctor.query.options(joinedload(Doctor.user), joinedload(Doctor.department)).all()
         if not doctors:
             raise ServiceError("No doctors found")
         return [doctor.to_dict() for doctor in doctors]

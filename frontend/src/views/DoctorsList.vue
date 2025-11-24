@@ -63,7 +63,7 @@
                 </p>
               </div>
 
-              <button class="btn btn-primary w-full mt-auto">
+              <button @click="$router.push('/appointments')" class="btn btn-primary w-full mt-auto">
                 Book Appointment
               </button>
             </div>

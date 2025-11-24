@@ -29,6 +29,12 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
+        path: '/admin/dashboard',
+        name: 'AdminDashboard',
+        component: () => import('@/views/AdminDashboard.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
         path: '/doctors',
         name: 'Doctors',
         component: () => import('@/views/DoctorsList.vue'),
@@ -61,16 +67,28 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const isAuthenticated = store.getters.isAuthenticated;
+    const userRole = store.getters.userRole;
 
     if (to.matched.some((record) => record.meta.requiresAuth)) {
         if (!isAuthenticated) {
             next('/login');
+        } else if (to.matched.some((record) => record.meta.requiresAdmin)) {
+            if (userRole === 'admin') {
+                next();
+            } else {
+                next('/dashboard');
+            }
         } else {
             next();
         }
     } else if (to.matched.some((record) => record.meta.guest)) {
         if (isAuthenticated) {
-            next('/dashboard');
+            // Redirect based on role
+            if (userRole === 'admin') {
+                next('/admin/dashboard');
+            } else {
+                next('/dashboard');
+            }
         } else {
             next();
         }

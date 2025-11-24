@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
 from backend.services.appointment_services import AppointmentService
 from backend.services.service_errors import ServiceError
+from backend.extensions import cache
 
 appointment_bp = Blueprint("appointment_bp", __name__, url_prefix="/api/appointments")
 appointment_api = Api(appointment_bp)
@@ -39,6 +40,7 @@ class AppointmentResource(Resource):
 # ------------------------------------
 class AppointmentListResource(Resource):
 
+    @cache.cached(timeout=60)
     def get(self):
         try:
             return AppointmentService.get_all(), 200

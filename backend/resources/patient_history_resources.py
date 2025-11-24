@@ -65,7 +65,15 @@ class PatientHistoryByPatientResource(Resource):
             return {"message": str(e)}, 404
 
 
+class PatientHistoryExportResource(Resource):
+    def post(self, patient_id):
+        from backend.tasks import export_patient_history_csv
+        task = export_patient_history_csv.delay(patient_id)
+        return {"message": "Export started", "task_id": task.id}, 202
+
+
 # Register routes
 history_api.add_resource(PatientHistoryListResource, "/")
 history_api.add_resource(PatientHistoryResource, "/<int:id>")
 history_api.add_resource(PatientHistoryByPatientResource, "/patient/<int:patient_id>")
+history_api.add_resource(PatientHistoryExportResource, "/export/<int:patient_id>")

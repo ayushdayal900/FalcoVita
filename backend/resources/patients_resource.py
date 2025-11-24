@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from flask_restful import Resource, Api
 from backend.services import PatientService, ServiceError
+from backend.extensions import cache
 
 patient_bp = Blueprint("patient_bp", __name__, url_prefix="/api/patients")
 patient_api = Api(patient_bp)
@@ -62,6 +63,7 @@ class PatientByEmailResource(Resource):
 # --------------------------------------
 class PatientListResource(Resource):
 
+    @cache.cached(timeout=60)
     def get(self):
         """Get all patients"""
         try:

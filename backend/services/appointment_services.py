@@ -18,7 +18,12 @@ class AppointmentService:
     # ----------------------------------------
     @staticmethod
     def get_all():
-        appointments = Appointment.query.all()
+        from sqlalchemy.orm import joinedload
+        appointments = Appointment.query.options(
+            joinedload(Appointment.patient).joinedload(Patient.user),
+            joinedload(Appointment.doctor).joinedload(Doctor.user),
+            joinedload(Appointment.department)
+        ).all()
         if not appointments:
             raise ServiceError("No appointments found")
         return [a.to_dict() for a in appointments]
