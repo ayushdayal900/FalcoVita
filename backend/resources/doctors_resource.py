@@ -61,7 +61,6 @@ class DoctorByEmailResource(Resource):
 # ---------------------------
 class DoctorListResource(Resource):
 
-    @cache.cached(timeout=60)
     def get(self):
         """Get all doctors"""
         try:

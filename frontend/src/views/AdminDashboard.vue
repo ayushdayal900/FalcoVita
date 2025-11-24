@@ -39,24 +39,15 @@
           </div>
 
           <!-- Search -->
-          <div class="card p-4 mb-6">
-            <div class="flex gap-4">
-              <input 
-                type="text" 
-                v-model="searchQuery" 
-                placeholder="Search doctors or patients..." 
-                class="input"
-                style="min-width: 400px; flex: 1;"
-                @keyup.enter="performSearch"
-              />
-              <select v-model="searchType" class="input" style="width: 120px;">
-                <option value="all">All</option>
-                <option value="doctor">Doctors</option>
-                <option value="patient">Patients</option>
-              </select>
-              <button @click="performSearch" class="btn btn-primary">Search</button>
-            </div>
-          </div>
+          <SearchBar 
+            v-model="searchQuery" 
+            v-model:searchType="searchType"
+            placeholder="Search doctors or patients..."
+            :showTypeSelector="true"
+            :types="['doctor', 'patient']"
+            @search="performSearch"
+            @clear="searchQuery = ''; searchResults = null"
+          />
 
           <!-- Search Results -->
           <div v-if="searchResults" class="mb-6">
@@ -220,6 +211,7 @@
 import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
+import SearchBar from '@/components/SearchBar.vue';
 import api from '@/services/api';
 
 const router = useRouter();

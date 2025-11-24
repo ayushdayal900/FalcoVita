@@ -22,10 +22,10 @@
                 placeholder="Search doctors by name, email or specialization..." 
                 class="input"
                 style="min-width: 400px; flex: 1;"
-                @keyup.enter="performSearch"
+                @keyup.enter="search = search"
               />
-              <button @click="performSearch" class="btn btn-primary">Search</button>
-              <button @click="clearSearch" class="btn btn-outline">Clear</button>
+              <button class="btn btn-primary">Search</button>
+              <button @click="search = ''" class="btn btn-outline">Clear</button>
             </div>
           </div>
 
@@ -145,7 +145,6 @@ const doctors = ref([]);
 const departments = ref([]);
 const loading = ref(true);
 const search = ref('');
-const searchActive = ref(false);
 const showAddModal = ref(false);
 const editingDoctor = ref(null);
 
@@ -181,7 +180,7 @@ const fetchDepartments = async () => {
 };
 
 const displayedDoctors = computed(() => {
-  if (!search.value || !searchActive.value) return doctors.value;
+  if (!search.value) return doctors.value;
   const term = search.value.toLowerCase();
   return doctors.value.filter(doc => 
     (doc.user?.name?.toLowerCase().includes(term)) ||
@@ -189,17 +188,6 @@ const displayedDoctors = computed(() => {
     (doc.user?.email?.toLowerCase().includes(term))
   );
 });
-
-const performSearch = () => {
-  if (search.value.trim()) {
-    searchActive.value = true;
-  }
-};
-
-const clearSearch = () => {
-  search.value = '';
-  searchActive.value = false;
-};
 
 const editDoctor = (doctor) => {
   editingDoctor.value = doctor;

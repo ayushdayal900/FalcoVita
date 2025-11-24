@@ -19,10 +19,10 @@
                 placeholder="Search patients by name, email or medical record number..." 
                 class="input"
                 style="min-width: 400px; flex: 1;"
-                @keyup.enter="performSearch"
+                @keyup.enter="search = search"
               />
-              <button @click="performSearch" class="btn btn-primary">Search</button>
-              <button @click="clearSearch" class="btn btn-outline">Clear</button>
+              <button class="btn btn-primary">Search</button>
+              <button @click="search = ''" class="btn btn-outline">Clear</button>
             </div>
           </div>
 
@@ -89,7 +89,6 @@ const router = useRouter();
 const patients = ref([]);
 const loading = ref(true);
 const search = ref('');
-const searchActive = ref(false);
 
 const fetchPatients = async () => {
   try {
@@ -103,7 +102,7 @@ const fetchPatients = async () => {
 };
 
 const displayedPatients = computed(() => {
-  if (!search.value || !searchActive.value) return patients.value;
+  if (!search.value) return patients.value;
   const term = search.value.toLowerCase();
   return patients.value.filter(p => 
     (p.user?.name?.toLowerCase().includes(term)) ||
@@ -111,17 +110,6 @@ const displayedPatients = computed(() => {
     (p.user?.email?.toLowerCase().includes(term))
   );
 });
-
-const performSearch = () => {
-  if (search.value.trim()) {
-    searchActive.value = true;
-  }
-};
-
-const clearSearch = () => {
-  search.value = '';
-  searchActive.value = false;
-};
 
 const viewHistory = (patient) => {
   // Navigate to patient history view

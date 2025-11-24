@@ -13,16 +13,23 @@
       <div class="flex-1 overflow-auto p-6">
         <div class="container mx-auto">
           
+          <!-- Search -->
+          <SearchBar 
+            v-model="search" 
+            placeholder="Search appointments by patient or doctor name..."
+            @clear="search = ''"
+          />
+
           <div v-if="loading" class="text-center py-10">
             <p class="text-muted">Loading appointments...</p>
           </div>
 
-          <div v-else-if="filteredAppointments.length === 0" class="text-center py-10">
+          <div v-else-if="displayedAppointments.length === 0" class="text-center py-10">
             <p class="text-muted">No appointments found.</p>
           </div>
 
           <div v-else class="space-y-4">
-            <div v-for="appt in filteredAppointments" :key="appt.id" class="card p-4 flex items-center justify-between">
+            <div v-for="appt in displayedAppointments" :key="appt.id" class="card p-4 flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-muted font-bold">
                   {{ getInitials(appt) }}
@@ -86,6 +93,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import Sidebar from '@/components/Sidebar.vue';
+import SearchBar from '@/components/SearchBar.vue';
 import api from '@/services/api';
 
 const store = useStore();
@@ -96,6 +104,7 @@ const appointments = ref([]);
 const doctors = ref([]); // For booking dropdown
 const loading = ref(true);
 const showBookModal = ref(false);
+const search = ref('');
 
 const newAppt = ref({
   doctor_id: '',
@@ -105,13 +114,24 @@ const newAppt = ref({
 const filteredAppointments = computed(() => {
   if (!currentUser.value) return [];
   return appointments.value.filter(appt => {
-    if (userRole.value === 'patient') {
+    if (userRole.value === 'admin') {
+      return true; // Show all appointments for admin
+    } else if (userRole.value === 'patient') {
       return appt.patient_id === currentUser.value.id;
     } else if (userRole.value === 'doctor') {
       return appt.doctor_id === currentUser.value.id;
     }
     return false;
   });
+});
+
+const displayedAppointments = computed(() => {
+  if (!search.value) return filteredAppointments.value;
+  const term = search.value.toLowerCase();
+  return filteredAppointments.value.filter(appt => 
+    (appt.patient?.user?.name?.toLowerCase().includes(term)) ||
+    (appt.doctor?.user?.name?.toLowerCase().includes(term))
+  );
 });
 
 const fetchAppointments = async () => {

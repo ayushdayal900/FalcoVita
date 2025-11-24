@@ -11,14 +11,11 @@
         <div class="container mx-auto">
           
           <!-- Search/Filter -->
-          <div class="mb-6 flex gap-4">
-            <input 
-              type="text" 
-              v-model="search" 
-              placeholder="Search by name or specialization..." 
-              class="input max-w-md"
-            />
-          </div>
+          <SearchBar 
+            v-model="search" 
+            placeholder="Search by name or specialization..."
+            @clear="search = ''"
+          />
 
           <div v-if="loading" class="text-center py-10">
             <p class="text-muted">Loading doctors...</p>
@@ -67,6 +64,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
+import SearchBar from '@/components/SearchBar.vue';
 import api from '@/services/api';
 
 const doctors = ref([]);

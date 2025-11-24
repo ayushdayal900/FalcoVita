@@ -169,16 +169,18 @@ const handleRegister = async () => {
 <style scoped>
 .auth-container {
   background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+  padding: 2rem;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 500px;
-  background: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  padding: 3rem 2.5rem;
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .role-btn {
