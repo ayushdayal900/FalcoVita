@@ -64,7 +64,8 @@ class DoctorListResource(Resource):
     def get(self):
         """Get all doctors"""
         try:
-            doctors = DoctorService.get_all()
+            include_blocked = request.args.get('include_blocked', 'false').lower() == 'true'
+            doctors = DoctorService.get_all(include_blocked=include_blocked)
             return doctors, 200
         except ServiceError as e:
             return {"message": str(e)}, 404

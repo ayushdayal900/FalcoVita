@@ -51,6 +51,7 @@ class User(BaseModel, UserMixin):
             "role": self.role,
             "contact_number": self.contact_number,
             "active": self.active,
+            "blacklisted": self.blacklisted,
         })
         if self.doctor:
             data["doctor"] = self.doctor.to_dict_basic()

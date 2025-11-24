@@ -58,8 +58,8 @@
                   <td class="p-4 text-sm">{{ doctor.department?.name || 'N/A' }}</td>
                   <td class="p-4 text-sm">{{ doctor.experience }} years</td>
                   <td class="p-4">
-                    <span v-if="doctor.user?.blacklisted" class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded">Blocked</span>
-                    <span v-else class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded">Active</span>
+                    <span v-if="doctor.user?.blacklisted" class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded font-medium">Inactive</span>
+                    <span v-else class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded font-medium">Active</span>
                   </td>
                   <td class="p-4">
                     <div class="flex gap-2">
@@ -161,7 +161,7 @@ const doctorForm = ref({
 
 const fetchDoctors = async () => {
   try {
-    const response = await api.get('/doctors/');
+    const response = await api.get('/doctors/?include_blocked=true');
     doctors.value = response.data;
   } catch (err) {
     console.error('Failed to fetch doctors', err);

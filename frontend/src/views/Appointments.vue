@@ -28,28 +28,41 @@
             <p class="text-muted">No appointments found.</p>
           </div>
 
-          <div v-else class="space-y-4">
-            <div v-for="appt in displayedAppointments" :key="appt.id" class="card p-4 flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-muted font-bold">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="appt in displayedAppointments" :key="appt.id" class="card p-6 flex flex-col">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-muted font-bold text-lg">
                   {{ getInitials(appt) }}
                 </div>
                 <div>
-                  <h3 class="font-bold text-main">
+                  <h3 class="font-bold text-lg text-main">
                     {{ userRole === 'doctor' ? appt.patient?.user?.name : appt.doctor?.user?.name }}
                   </h3>
                   <p class="text-sm text-muted">
                     {{ new Date(appt.appointment_date).toLocaleString() }}
                   </p>
-                  <p class="text-xs text-primary font-medium mt-1 uppercase tracking-wide">{{ appt.status }}</p>
+                  <p class="text-xs font-bold mt-1 uppercase tracking-wide" 
+                     :class="{
+                       'text-green-600': appt.status === 'completed',
+                       'text-blue-600': appt.status === 'scheduled',
+                       'text-red-600': appt.status === 'canceled'
+                     }">
+                    {{ appt.status }}
+                  </p>
                 </div>
               </div>
               
-              <div class="flex gap-2">
-                <button v-if="appt.status === 'scheduled'" @click="cancelAppointment(appt.id)" class="btn btn-outline text-red-500 border-red-200 hover:bg-red-50 hover:border-red-500 text-sm">
+              <div class="space-y-2 mb-6 flex-1">
+                 <p class="text-sm text-muted">
+                  <span class="font-medium text-main">Department:</span> {{ appt.department?.name || 'N/A' }}
+                </p>
+              </div>
+
+              <div class="flex gap-2 mt-auto">
+                <button v-if="appt.status === 'scheduled'" @click="cancelAppointment(appt.id)" class="btn btn-outline w-full text-red-500 border-red-200 hover:bg-red-50 hover:border-red-500 text-sm">
                   Cancel
                 </button>
-                <button v-if="userRole === 'doctor' && appt.status === 'scheduled'" @click="completeAppointment(appt.id)" class="btn btn-primary text-sm">
+                <button v-if="userRole === 'doctor' && appt.status === 'scheduled'" @click="completeAppointment(appt.id)" class="btn btn-primary w-full text-sm">
                   Complete
                 </button>
               </div>
@@ -67,7 +80,7 @@
         <form @submit.prevent="bookAppointment">
           <div class="form-group mb-4">
             <label class="label">Select Doctor</label>
-            <select v-model="newAppt.doctor_id" class="input" required>
+            <select v-model="newAppt.doctor_id" @change="handleDoctorChange" class="input" required>
               <option value="" disabled>Select a doctor</option>
               <option v-for="doc in doctors" :key="doc.id" :value="doc.id">
                 {{ doc.user?.name }} ({{ doc.specialization }})
@@ -75,8 +88,16 @@
             </select>
           </div>
           <div class="form-group mb-4">
-            <label class="label">Date & Time</label>
-            <input type="datetime-local" v-model="newAppt.date" class="input" required />
+            <label class="label">Available Slots</label>
+            <select v-model="newAppt.slot_id" class="input" required :disabled="!newAppt.doctor_id">
+              <option value="" disabled>Select a time slot</option>
+              <option v-for="slot in availableSlots" :key="slot.id" :value="slot.id">
+                {{ new Date(slot.available_date).toLocaleDateString() }} - {{ slot.time_slot }}
+              </option>
+            </select>
+            <p v-if="newAppt.doctor_id && availableSlots.length === 0" class="text-xs text-red-500 mt-1">
+              No available slots for this doctor.
+            </p>
           </div>
           <div class="flex justify-end gap-2">
             <button type="button" @click="showBookModal = false" class="btn btn-outline">Cancel</button>
@@ -108,8 +129,28 @@ const search = ref('');
 
 const newAppt = ref({
   doctor_id: '',
-  date: ''
+  slot_id: ''
 });
+
+const slots = ref([]);
+const availableSlots = computed(() => {
+  return slots.value.filter(slot => slot.status === 'available');
+});
+
+const fetchSlots = async (doctorId) => {
+  if (!doctorId) return;
+  try {
+    const response = await api.get(`/availability/doctor/${doctorId}`);
+    slots.value = response.data;
+  } catch (err) {
+    console.error('Failed to fetch slots', err);
+  }
+};
+
+const handleDoctorChange = () => {
+  newAppt.value.slot_id = '';
+  fetchSlots(newAppt.value.doctor_id);
+};
 
 const filteredAppointments = computed(() => {
   if (!currentUser.value) return [];
@@ -163,20 +204,42 @@ const getInitials = (appt) => {
 
 const bookAppointment = async () => {
   try {
-    // Need department_id for appointment. Assuming doctor object has it.
-    const selectedDoc = doctors.value.find(d => d.id === newAppt.doctor_id);
-    if (!selectedDoc) return;
+    console.log('Booking appointment...');
+    
+    const selectedDoc = doctors.value.find(d => d.id === newAppt.value.doctor_id);
+    const selectedSlot = slots.value.find(s => s.id === newAppt.value.slot_id);
+    
+    if (!selectedDoc || !selectedSlot) {
+      console.error('Doctor or Slot not selected');
+      return;
+    }
 
-    await api.post('/appointments/', {
-      doctor_id: newAppt.doctor_id,
+    // Combine date and time from slot (assuming slot.available_date is a date string and time_slot is "HH:MM-HH:MM")
+    // For simplicity, let's assume available_date is the date and we take the start time from time_slot
+    // Format: "09:00-10:00" -> "09:00"
+    const startTime = selectedSlot.time_slot.split('-')[0];
+    const appointmentDate = new Date(selectedSlot.available_date);
+    const [hours, minutes] = startTime.split(':');
+    appointmentDate.setHours(parseInt(hours), parseInt(minutes));
+
+    const payload = {
+      doctor_id: newAppt.value.doctor_id,
       department_id: selectedDoc.department_id,
-      patient_id: store.getters.currentUser.id, // Assuming user.id is patient.id (one-to-one)
-      appointment_date: new Date(newAppt.date).toISOString(),
+      patient_id: store.getters.currentUser.id, 
+      appointment_date: appointmentDate.toISOString(),
       status: 'scheduled'
-    });
+    };
+    console.log('Payload:', payload);
+
+    await api.post('/appointments/', payload);
+    
+    // Mark slot as booked
+    await api.put(`/availability/${selectedSlot.id}`, { status: 'booked' });
+    
     showBookModal.value = false;
     fetchAppointments();
   } catch (err) {
+    console.error(err);
     alert('Failed to book appointment');
   }
 };

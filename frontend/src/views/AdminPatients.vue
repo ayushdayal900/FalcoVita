@@ -55,8 +55,8 @@
                   <td class="p-4 text-sm">{{ patient.dob ? new Date(patient.dob).toLocaleDateString() : '-' }}</td>
                   <td class="p-4 text-sm">{{ patient.contact }}</td>
                   <td class="p-4">
-                    <span v-if="patient.user?.blacklisted" class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded">Blocked</span>
-                    <span v-else class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded">Active</span>
+                    <span v-if="patient.user?.blacklisted" class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded font-medium">Inactive</span>
+                    <span v-else class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded font-medium">Active</span>
                   </td>
                   <td class="p-4">
                     <div class="flex gap-2">

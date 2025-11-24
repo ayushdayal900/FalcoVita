@@ -24,29 +24,34 @@
             <p class="text-muted">No patients found.</p>
           </div>
 
-          <div v-else class="card overflow-hidden">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-muted text-sm border-b border-slate-200">
-                  <th class="p-4 font-medium">Name</th>
-                  <th class="p-4 font-medium">Contact</th>
-                  <th class="p-4 font-medium">Medical Record #</th>
-                  <th class="p-4 font-medium">DOB</th>
-                  <th class="p-4 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="patient in filteredPatients" :key="patient.id" class="border-b border-slate-100 hover:bg-slate-50">
-                  <td class="p-4 font-medium">{{ patient.user?.name || 'Patient' }}</td>
-                  <td class="p-4 text-sm">{{ patient.contact }}</td>
-                  <td class="p-4 text-sm">{{ patient.medical_record_number }}</td>
-                  <td class="p-4 text-sm">{{ patient.dob ? new Date(patient.dob).toLocaleDateString() : '-' }}</td>
-                  <td class="p-4">
-                    <button class="text-primary hover:underline text-sm font-medium">View History</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="patient in filteredPatients" :key="patient.id" class="card p-6 flex flex-col">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                  Pt
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg">{{ patient.user?.name || 'Patient' }}</h3>
+                  <p class="text-sm text-primary">MRN: {{ patient.medical_record_number }}</p>
+                </div>
+              </div>
+              
+              <div class="space-y-2 mb-6 flex-1">
+                <p class="text-sm text-muted">
+                  <span class="font-medium text-main">DOB:</span> {{ patient.dob ? new Date(patient.dob).toLocaleDateString() : '-' }}
+                </p>
+                <p class="text-sm text-muted">
+                  <span class="font-medium text-main">Contact:</span> {{ patient.contact }}
+                </p>
+                <p class="text-sm text-muted">
+                  <span class="font-medium text-main">Email:</span> {{ patient.user?.email }}
+                </p>
+              </div>
+
+              <button class="btn btn-primary w-full mt-auto text-center">
+                View History
+              </button>
+            </div>
           </div>
 
         </div>
@@ -92,8 +97,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.bg-slate-50 { background-color: #f8fafc; }
-.border-slate-200 { border-color: #e2e8f0; }
-.border-slate-100 { border-color: #f1f5f9; }
-.hover\:bg-slate-50:hover { background-color: #f8fafc; }
+.text-main { color: #1e293b; }
+.text-muted { color: #64748b; }
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  border: 1px solid #e2e8f0;
+}
 </style>

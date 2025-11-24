@@ -5,3 +5,4 @@ from flask_caching import Cache
 db = SQLAlchemy()
 security = Security()
 cache = Cache()
+user_datastore = None  # Will be initialized in create_app

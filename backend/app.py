@@ -12,6 +12,15 @@ from backend.resources import (
 )
 
 
+from celery import Celery
+
+celery = Celery(
+    "tasks",
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0"
+)
+
+
 # from backend.export_resource import export_bp
 from flask_cors import CORS
 
@@ -42,20 +51,17 @@ def create_app():
     # Initialize API
     api.init_app(app)
 
-    # Database
-    from backend.models import db, User, Role
-    db.init_app(app)
+    # Database & Extensions
+    from backend.models import User, Role
+    from backend import extensions
+    from flask_security import SQLAlchemyUserDatastore
 
-    # Flask Security
-    from backend.extensions import security
-    from flask_security.datastore import SQLAlchemyUserDatastore
-    datastore = SQLAlchemyUserDatastore(db, User, Role)
-    security.init_app(app, datastore=datastore)
-    app.datastore = datastore
+    extensions.db.init_app(app)
+    extensions.cache.init_app(app)
 
-    # Create DB tables
-    with app.app_context():
-        db.create_all()
+    # Setup Flask-Security
+    extensions.user_datastore = SQLAlchemyUserDatastore(extensions.db, User, Role)
+    extensions.security.init_app(app, extensions.user_datastore)
 
     return app
 

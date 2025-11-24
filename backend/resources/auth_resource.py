@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app as app
+from flask import Blueprint, request, jsonify, current_app
 from flask_security.utils import verify_and_update_password, hash_password
 from backend.models import User, Doctor, Patient
 from backend.extensions import db
@@ -20,7 +20,9 @@ def login():
     if not email or not password:
         return {"message": "Email and password are required"}, 400
 
-    user = app.datastore.find_user(email=email)
+    # Access user_datastore from extensions at request time
+    from backend import extensions
+    user = extensions.user_datastore.find_user(email=email)
 
     if not user or not verify_and_update_password(password, user):
         return {"message": "Invalid credentials"}, 401
@@ -52,12 +54,15 @@ def register():
     if not name or not email or not password or not role:
         return {"message": "Name, email, role and password are required"}, 400
 
+    # Access user_datastore from extensions at request time
+    from backend import extensions
+    
     # Prevent duplicate email
-    if app.datastore.find_user(email=email):
+    if extensions.user_datastore.find_user(email=email):
         return {"message": "User with this email already exists"}, 409
 
     # Create USER
-    user = app.datastore.create_user(
+    user = extensions.user_datastore.create_user(
         name=name,
         email=email,
         password=hash_password(password),
@@ -68,8 +73,8 @@ def register():
     db.session.commit()
 
     # Assign ROLE via flask-security
-    role_obj = app.datastore.find_role(role)
-    app.datastore.add_role_to_user(user, role_obj)
+    role_obj = extensions.user_datastore.find_role(role)
+    extensions.user_datastore.add_role_to_user(user, role_obj)
     db.session.commit()
 
     # ---------------------------------------------------

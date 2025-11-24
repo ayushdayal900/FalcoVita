@@ -8,7 +8,8 @@ def make_celery(app_name=__name__):
     celery = Celery(
         app_name,
         broker=redis_url,
-        backend=redis_url
+        backend=redis_url,
+        include=['backend.tasks']
     )
     
     celery.conf.update(
