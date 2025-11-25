@@ -21,8 +21,8 @@
             <p class="text-muted">No medical history found.</p>
           </div>
 
-          <div v-else class="space-y-6">
-            <div v-for="record in history" :key="record.id" class="card p-6">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="record in history" :key="record.id" class="card p-6 flex flex-col h-full hover:shadow-md transition-shadow">
               <div class="flex justify-between items-start mb-4">
                 <div>
                   <h3 class="text-lg font-bold text-primary">{{ record.visit_type }}</h3>
@@ -34,14 +34,31 @@
                 </div>
               </div>
               
-              <div class="mb-4">
+              <div class="mb-4 flex-1">
                 <h4 class="text-sm font-medium text-main mb-1">Diagnosis</h4>
-                <p class="text-sm text-muted bg-slate-50 p-3 rounded border border-slate-100">
+                <p class="text-sm text-muted bg-slate-50 p-3 rounded border border-slate-100 h-full">
                   {{ record.diagnosis || 'No diagnosis recorded.' }}
                 </p>
               </div>
 
-              <!-- Prescriptions would go here if available in the record object or fetched separately -->
+              <div v-if="record.prescriptions && record.prescriptions.length > 0" class="mt-4 pt-4 border-t border-slate-100">
+                <h4 class="text-sm font-medium text-main mb-2">Prescription</h4>
+                <div v-for="rx in record.prescriptions" :key="rx.id" class="bg-blue-50 p-3 rounded border border-blue-100 text-sm">
+                  <div class="grid grid-cols-1 gap-2">
+                    <div>
+                      <span class="text-xs text-muted block">Medicines</span>
+                      <span class="font-medium text-slate-700">{{ rx.medicines }}</span>
+                    </div>
+                    <div>
+                      <span class="text-xs text-muted block">Dosage</span>
+                      <span class="font-medium text-slate-700">{{ rx.dosage }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="mt-4 pt-4 border-t border-slate-100 text-sm text-muted italic">
+                No prescription recorded.
+              </div>
             </div>
           </div>
 
@@ -78,11 +95,27 @@ const fetchHistory = async () => {
 const exportHistory = async () => {
   try {
     if (!currentUser.value) return;
-    await api.post(`/history/export/${currentUser.value.id}`);
-    alert('Export started! You will receive an email shortly.');
+    
+    // Make GET request with blob response type
+    const response = await api.get(`/history/export/${currentUser.value.id}`, {
+      responseType: 'blob'
+    });
+    
+    // Create blob URL and trigger download
+    const blob = new Blob([response.data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `patient_${currentUser.value.id}_history.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    alert('CSV file downloaded successfully!');
   } catch (err) {
     console.error('Export failed', err);
-    alert('Failed to start export.');
+    alert('Failed to export CSV.');
   }
 };
 

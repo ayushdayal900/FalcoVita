@@ -12,7 +12,7 @@ class DoctorService:
         return Doctor.query.filter_by(id=id).first()
 
     @staticmethod
-    def get_all(include_blocked=False):
+    def get_all(include_blocked=False, department_id=None):
         from sqlalchemy.orm import joinedload
         # Always use joinedload to eagerly load the user relationship
         query = Doctor.query.options(joinedload(Doctor.user), joinedload(Doctor.department))
@@ -20,6 +20,9 @@ class DoctorService:
         # Only filter out blacklisted users if include_blocked is False
         if not include_blocked:
             query = query.filter(Doctor.user.has(blacklisted=False))
+            
+        if department_id:
+            query = query.filter(Doctor.department_id == department_id)
             
         doctors = query.all()
         return [doctor.to_dict() for doctor in doctors]

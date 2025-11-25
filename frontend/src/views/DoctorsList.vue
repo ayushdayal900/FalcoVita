@@ -11,11 +11,23 @@
         <div class="container mx-auto">
           
           <!-- Search/Filter -->
-          <SearchBar 
-            v-model="search" 
-            placeholder="Search by name or specialization..."
-            @clear="search = ''"
-          />
+          <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <SearchBar 
+              v-model="search" 
+              placeholder="Search by name or specialization..."
+              @clear="search = ''"
+              class="flex-1"
+            />
+            
+            <div v-if="activeDepartmentId" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg border border-blue-200">
+              <span class="text-sm font-medium">Filtered by Department</span>
+              <button @click="clearDepartmentFilter" class="hover:text-blue-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
 
           <div v-if="loading" class="text-center py-10">
             <p class="text-muted">Loading doctors...</p>
@@ -88,8 +100,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import api from '@/services/api';
@@ -98,16 +111,27 @@ const store = useStore();
 const userRole = computed(() => store.getters.userRole);
 const currentUser = computed(() => store.getters.currentUser);
 
+const route = useRoute();
+const router = useRouter();
+
 const doctors = ref([]);
 const loading = ref(true);
 const search = ref('');
 const showManageModal = ref(false);
 const selectedDoctor = ref(null);
+const activeDepartmentId = ref(route.query.department_id || null);
 
 const fetchDoctors = async () => {
   try {
+    loading.value = true;
     // Admin sees all (including blocked), Patients see only active (default backend behavior)
-    const url = userRole.value === 'admin' ? '/doctors/?include_blocked=true' : '/doctors/';
+    let url = userRole.value === 'admin' ? '/doctors/?include_blocked=true' : '/doctors/';
+    
+    if (activeDepartmentId.value) {
+      const separator = url.includes('?') ? '&' : '?';
+      url += `${separator}department_id=${activeDepartmentId.value}`;
+    }
+
     const response = await api.get(url);
     doctors.value = response.data;
   } catch (err) {
@@ -115,6 +139,12 @@ const fetchDoctors = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const clearDepartmentFilter = () => {
+  activeDepartmentId.value = null;
+  router.replace({ query: {} });
+  fetchDoctors();
 };
 
 const openManageModal = (doctor) => {

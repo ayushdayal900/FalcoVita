@@ -15,7 +15,9 @@ class DepartmentListResource(Resource):
         
         for dept in departments:
             dept_data = dept.to_dict()
-            dept_data['doctor_count'] = Doctor.query.filter_by(department_id=dept.id).count()
+            doctors = Doctor.query.filter_by(department_id=dept.id).all()
+            dept_data['doctors'] = [d.to_dict() for d in doctors]
+            dept_data['doctor_count'] = len(doctors)
             result.append(dept_data)
         
         return result, 200

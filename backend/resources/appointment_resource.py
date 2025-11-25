@@ -40,7 +40,6 @@ class AppointmentResource(Resource):
 # ------------------------------------
 class AppointmentListResource(Resource):
 
-    @cache.cached(timeout=60)
     def get(self):
         try:
             return AppointmentService.get_all(), 200

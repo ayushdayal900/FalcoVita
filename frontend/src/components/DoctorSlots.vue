@@ -23,7 +23,7 @@
 
         <button
           class="btn btn-primary px-3 py-1"
-          @click="bookSlot(slot.id)"
+          @click="bookSlot(slot)"
           :disabled="slot.status === 'booked'"
         >
           Book
@@ -39,7 +39,8 @@ import api from "@/services/api";
 
 const props = defineProps({
   doctorId: Number,
-  patientId: Number
+  patientId: Number,
+  departmentId: Number
 });
 
 const slots = ref([]);
@@ -56,13 +57,37 @@ const loadSlots = async () => {
   }
 };
 
-const bookSlot = async (slotId) => {
+const bookSlot = async (slot) => {
+  if (!props.departmentId) {
+    alert("Error: Missing department information.");
+    return;
+  }
+
   try {
-    await api.put(`/availability/${slotId}`, { status: "booked" });
+    // 1. Create Appointment
+    const startTime = slot.time_slot.split('-')[0];
+    const appointmentDate = new Date(slot.available_date);
+    const [hours, minutes] = startTime.split(':');
+    appointmentDate.setHours(parseInt(hours), parseInt(minutes));
+
+    const payload = {
+      doctor_id: props.doctorId,
+      department_id: props.departmentId,
+      patient_id: props.patientId,
+      appointment_date: appointmentDate.toISOString(),
+      status: 'scheduled'
+    };
+
+    await api.post('/appointments/', payload);
+
+    // 2. Mark Slot as Booked
+    await api.put(`/availability/${slot.id}`, { status: "booked" });
+    
     loadSlots();
-    alert("Slot booked successfully!");
+    alert("Appointment booked successfully!");
   } catch (err) {
     console.error("Booking failed", err);
+    alert("Failed to book appointment.");
   }
 };
 

@@ -28,7 +28,7 @@
 
     <!-- Availability Slots Component -->
     <div class="mt-6">
-      <DoctorSlots :doctorId="doctorId" :patientId="patientId" />
+      <DoctorSlots :doctorId="doctorId" :patientId="patientId" :departmentId="doctor.department_id" />
     </div>
 
   </div>
@@ -56,7 +56,8 @@ const loadDoctor = async () => {
       name: res.data.user?.name,
       specialization: res.data.specialization,
       qualifications: res.data.qualifications,
-      experience: res.data.experience
+      experience: res.data.experience,
+      department_id: res.data.department_id
     };
   } catch (err) {
     console.error("Failed to load doctor info", err);

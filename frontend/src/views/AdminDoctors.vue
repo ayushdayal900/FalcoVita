@@ -1,78 +1,152 @@
 <template>
-  <div class="dashboard-layout flex h-screen overflow-hidden">
+  <div class="dashboard-layout flex h-screen overflow-hidden bg-slate-50">
     <Sidebar />
     
-    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-        <h2 class="text-lg font-medium">Manage Doctors</h2>
-        <button @click="showAddModal = true" class="btn btn-primary text-sm">
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+      <!-- Top Header -->
+      <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Manage Doctors</h2>
+          <p class="text-sm text-slate-500">View and manage medical staff</p>
+        </div>
+        <button @click="showAddModal = true" class="btn bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/30 flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
           Add New Doctor
         </button>
       </header>
 
-      <div class="flex-1 overflow-auto p-6">
-        <div class="container mx-auto">
+      <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <div class="max-w-7xl mx-auto">
           
-          <!-- Enhanced Search -->
-          <div class="card p-4 mb-6">
-            <div class="flex gap-4">
+          <!-- Search & Filter Bar -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="relative flex-1 w-full md:max-w-md">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
               <input 
                 type="text" 
                 v-model="search" 
-                placeholder="Search doctors by name, email or specialization..." 
-                class="input"
-                style="min-width: 400px; flex: 1;"
-                @keyup.enter="search = search"
+                placeholder="Search by name, email or specialization..." 
+                class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white"
               />
-              <button class="btn btn-primary">Search</button>
-              <button @click="search = ''" class="btn btn-outline">Clear</button>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+              <button class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-sm transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filters
+              </button>
+              <button @click="search = ''" class="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-medium text-sm transition-colors" v-if="search">
+                Clear
+              </button>
             </div>
           </div>
 
-          <div v-if="loading" class="text-center py-10">
-            <p class="text-muted">Loading doctors...</p>
+          <!-- Loading State -->
+          <div v-if="loading" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
+            <p class="text-slate-500 font-medium">Loading doctors...</p>
           </div>
 
-          <div v-else-if="displayedDoctors.length === 0" class="text-center py-10">
-            <p class="text-muted">No doctors found.</p>
+          <!-- Empty State -->
+          <div v-else-if="displayedDoctors.length === 0" class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
+            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">No doctors found</h3>
+            <p class="text-slate-500">Try adjusting your search or add a new doctor.</p>
           </div>
 
-          <div v-else class="card overflow-hidden">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-muted text-sm border-b border-slate-200">
-                  <th class="p-4 font-medium">Name</th>
-                  <th class="p-4 font-medium">Email</th>
-                  <th class="p-4 font-medium">Specialization</th>
-                  <th class="p-4 font-medium">Department</th>
-                  <th class="p-4 font-medium">Experience</th>
-                  <th class="p-4 font-medium">Status</th>
-                  <th class="p-4 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="doctor in displayedDoctors" :key="doctor.id" class="border-b border-slate-100 hover:bg-slate-50">
-                  <td class="p-4 font-medium">{{ doctor.user?.name || 'Doctor' }}</td>
-                  <td class="p-4 text-sm">{{ doctor.user?.email }}</td>
-                  <td class="p-4 text-sm">{{ doctor.specialization }}</td>
-                  <td class="p-4 text-sm">{{ doctor.department?.name || 'N/A' }}</td>
-                  <td class="p-4 text-sm">{{ doctor.experience }} years</td>
-                  <td class="p-4">
-                    <span v-if="doctor.user?.blacklisted" class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded font-medium">Inactive</span>
-                    <span v-else class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded font-medium">Active</span>
-                  </td>
-                  <td class="p-4">
-                    <div class="flex gap-2">
-                      <button @click="editDoctor(doctor)" class="text-primary hover:underline text-sm font-medium">Edit</button>
-                      <button @click="toggleBlock(doctor)" class="text-orange-500 hover:underline text-sm font-medium">
-                        {{ doctor.user?.blacklisted ? 'Unblock' : 'Block' }}
-                      </button>
-                      <button @click="deleteDoctor(doctor.id)" class="text-red-500 hover:underline text-sm font-medium">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Doctors Table -->
+          <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50/50 border-b border-slate-200">
+                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Doctor</th>
+                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Specialization</th>
+                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Department</th>
+                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Experience</th>
+                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr v-for="doctor in displayedDoctors" :key="doctor.id" class="hover:bg-slate-50/80 transition-colors group">
+                    <td class="p-5">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700 flex items-center justify-center font-bold shadow-sm">
+                          {{ doctor.user?.name?.charAt(0) }}
+                        </div>
+                        <div>
+                          <p class="font-bold text-slate-800">{{ doctor.user?.name || 'Unknown' }}</p>
+                          <p class="text-xs text-slate-500">{{ doctor.user?.email }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="p-5">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        {{ doctor.specialization }}
+                      </span>
+                    </td>
+                    <td class="p-5 text-sm text-slate-600 font-medium">{{ doctor.department?.name || 'N/A' }}</td>
+                    <td class="p-5 text-sm text-slate-600">{{ doctor.experience }} years</td>
+                    <td class="p-5">
+                      <span v-if="doctor.user?.blacklisted" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span>
+                        Deactivated
+                      </span>
+                      <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5"></span>
+                        Active
+                      </span>
+                    </td>
+                    <td class="p-5 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button @click="editDoctor(doctor)" class="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all" title="Edit">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button @click="toggleBlock(doctor)" 
+                                class="p-2 rounded-lg transition-all"
+                                :class="doctor.user?.blacklisted ? 'text-emerald-500 hover:bg-emerald-50' : 'text-orange-400 hover:text-orange-600 hover:bg-orange-50'"
+                                :title="doctor.user?.blacklisted ? 'Unblock' : 'Block'">
+                          <svg v-if="doctor.user?.blacklisted" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                          </svg>
+                        </button>
+                        <button @click="deleteDoctor(doctor.id)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Pagination (Visual Only for now) -->
+            <div class="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
+              <p>Showing <span class="font-medium text-slate-900">{{ displayedDoctors.length }}</span> results</p>
+              <div class="flex gap-2">
+                <button class="px-3 py-1 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
+                <button class="px-3 py-1 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50" disabled>Next</button>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -80,56 +154,67 @@
     </main>
 
     <!-- Add/Edit Doctor Modal -->
-    <div v-if="showAddModal" class="modal-overlay">
-      <div class="card bg-white w-full max-w-2xl p-6 max-h-80vh overflow-y-auto">
-        <h3 class="text-lg font-bold mb-4">{{ editingDoctor ? 'Edit Doctor' : 'Add New Doctor' }}</h3>
+    <div v-if="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h3 class="text-xl font-bold text-slate-800">{{ editingDoctor ? 'Edit Doctor Profile' : 'Add New Doctor' }}</h3>
+          <button @click="closeModal" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         
-        <form @submit.prevent="saveDoctor" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="form-group">
-              <label class="label">Full Name</label>
-              <input v-model="doctorForm.name" class="input" required />
+        <div class="p-6 overflow-y-auto custom-scrollbar">
+          <form @submit.prevent="saveDoctor" class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="form-group">
+                <label class="label">Full Name</label>
+                <input v-model="doctorForm.name" class="input" placeholder="Dr. John Doe" required />
+              </div>
+              <div class="form-group">
+                <label class="label">Email Address</label>
+                <input type="email" v-model="doctorForm.email" class="input" placeholder="doctor@hospital.com" required :disabled="editingDoctor" />
+              </div>
+              <div class="form-group" v-if="!editingDoctor">
+                <label class="label">Password</label>
+                <input type="password" v-model="doctorForm.password" class="input" placeholder="••••••••" required />
+              </div>
+              <div class="form-group">
+                <label class="label">Contact Number</label>
+                <input v-model="doctorForm.contact_number" class="input" placeholder="+1 234 567 890" required />
+              </div>
+              <div class="form-group md:col-span-2">
+                <label class="label">Department</label>
+                <select v-model="doctorForm.department_id" class="input" required>
+                  <option value="">Select Department</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+                    {{ dept.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="label">Specialization</label>
+                <input v-model="doctorForm.specialization" class="input" placeholder="e.g. Cardiology" required />
+              </div>
+              <div class="form-group">
+                <label class="label">Experience (Years)</label>
+                <input type="number" v-model="doctorForm.experience" class="input" placeholder="e.g. 10" required />
+              </div>
+              <div class="form-group md:col-span-2">
+                <label class="label">Qualifications</label>
+                <input v-model="doctorForm.qualifications" class="input" placeholder="e.g. MBBS, MD, PhD" required />
+              </div>
             </div>
-            <div class="form-group">
-              <label class="label">Email</label>
-              <input type="email" v-model="doctorForm.email" class="input" required :disabled="editingDoctor" />
+            
+            <div class="flex gap-4 pt-4 border-t border-slate-100 mt-4">
+              <button type="button" @click="closeModal" class="btn btn-outline flex-1 rounded-xl">Cancel</button>
+              <button type="submit" class="btn btn-primary flex-1 rounded-xl shadow-lg shadow-primary-500/20">
+                {{ editingDoctor ? 'Update Profile' : 'Create Account' }}
+              </button>
             </div>
-            <div class="form-group" v-if="!editingDoctor">
-              <label class="label">Password</label>
-              <input type="password" v-model="doctorForm.password" class="input" required />
-            </div>
-            <div class="form-group">
-              <label class="label">Contact Number</label>
-              <input v-model="doctorForm.contact_number" class="input" required />
-            </div>
-            <div class="form-group">
-              <label class="label">Department</label>
-              <select v-model="doctorForm.department_id" class="input" required>
-                <option value="">Select Department</option>
-                <option v-for="dept in departments" :key="dept.id" :value="dept.id">
-                  {{ dept.name }}
-                </option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="label">Specialization</label>
-              <input v-model="doctorForm.specialization" class="input" required />
-            </div>
-            <div class="form-group">
-              <label class="label">Qualifications</label>
-              <input v-model="doctorForm.qualifications" class="input" required />
-            </div>
-            <div class="form-group">
-              <label class="label">Experience (Years)</label>
-              <input type="number" v-model="doctorForm.experience" class="input" required />
-            </div>
-          </div>
-          
-          <div class="flex gap-4 mt-6">
-            <button type="button" @click="closeModal" class="btn btn-outline flex-1">Cancel</button>
-            <button type="submit" class="btn btn-primary flex-1">{{ editingDoctor ? 'Update' : 'Create' }} Doctor</button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
 

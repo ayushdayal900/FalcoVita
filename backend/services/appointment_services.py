@@ -84,7 +84,32 @@ class AppointmentService:
             except:
                 raise ServiceError("Invalid date format for appointment_date")
 
-        appt.status = data.get("status", appt.status)
+        new_status = data.get("status")
+        if new_status == "completed" and appt.status != "completed":
+            # Generate History and Prescription
+            from backend.models import PatientHistory, Prescription
+            
+            history = PatientHistory(
+                patient_id=appt.patient_id,
+                doctor_id=appt.doctor_id,
+                department_id=appt.department_id,
+                appointment_id=appt.id,
+                visit_type="Consultation",
+                visit_date=datetime.now(),
+                diagnosis="Routine Checkup (Auto-generated)"
+            )
+            db.session.add(history)
+            db.session.flush() # Get ID
+
+            prescription = Prescription(
+                history_id=history.id,
+                medicines="General Health Supplements",
+                dosage="1 tablet daily",
+                instructions="Take after meals"
+            )
+            db.session.add(prescription)
+
+        appt.status = new_status if new_status else appt.status
         appt.department_id = data.get("department_id", appt.department_id)
         appt.doctor_id = data.get("doctor_id", appt.doctor_id)
         appt.patient_id = data.get("patient_id", appt.patient_id)
