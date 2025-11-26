@@ -323,6 +323,79 @@
       </div>
     </div>
 
+    <!-- Complete Appointment Modal -->
+    <div v-if="showCompleteModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-primary text-white border-bottom-0 rounded-top-4">
+            <h5 class="modal-title fw-bold">Complete Appointment & Write Prescription</h5>
+            <button type="button" class="btn-close btn-close-white" @click="showCompleteModal = false"></button>
+          </div>
+          
+          <div class="modal-body p-4">
+            <form @submit.prevent="submitCompletion">
+              
+              <div class="mb-4">
+                <label class="form-label fw-bold small text-uppercase text-muted">Diagnosis</label>
+                <textarea 
+                  v-model="completeForm.diagnosis" 
+                  class="form-control" 
+                  rows="2" 
+                  placeholder="Enter patient diagnosis..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                  <h6 class="fw-bold text-primary mb-3">Prescription Details</h6>
+                  
+                  <div class="mb-3">
+                    <label class="form-label fw-bold small">Medicines</label>
+                    <input 
+                      type="text" 
+                      v-model="completeForm.medicines" 
+                      class="form-control" 
+                      placeholder="e.g., Amoxicillin 500mg, Paracetamol"
+                      required
+                    >
+                  </div>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small">Dosage</label>
+                      <input 
+                        type="text" 
+                        v-model="completeForm.dosage" 
+                        class="form-control" 
+                        placeholder="e.g., 1 tablet 3 times a day"
+                        required
+                      >
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold small">Instructions</label>
+                      <input 
+                        type="text" 
+                        v-model="completeForm.instructions" 
+                        class="form-control" 
+                        placeholder="e.g., Take after food"
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <button type="button" @click="showCompleteModal = false" class="btn btn-light">Cancel</button>
+                <button type="submit" class="btn btn-primary fw-bold px-4">Complete & Save</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -468,12 +541,48 @@ const cancelAppointment = async (id) => {
   }
 };
 
-const completeAppointment = async (id) => {
+const showCompleteModal = ref(false);
+const selectedAppointmentId = ref(null);
+const completeForm = ref({
+  diagnosis: '',
+  medicines: '',
+  dosage: '',
+  instructions: ''
+});
+
+const completeAppointment = (id) => {
+  selectedAppointmentId.value = id;
+  completeForm.value = {
+    diagnosis: '',
+    medicines: '',
+    dosage: '',
+    instructions: ''
+  };
+  showCompleteModal.value = true;
+};
+
+const submitCompletion = async () => {
+  if (!selectedAppointmentId.value) return;
+  
   try {
-    await api.put(`/appointments/${id}`, { status: 'completed' });
+    const payload = {
+      status: 'completed',
+      diagnosis: completeForm.value.diagnosis,
+      prescription: {
+        medicines: completeForm.value.medicines,
+        dosage: completeForm.value.dosage,
+        instructions: completeForm.value.instructions
+      }
+    };
+
+    await api.put(`/appointments/${selectedAppointmentId.value}`, payload);
+    
+    showCompleteModal.value = false;
     fetchAppointments();
+    alert('Appointment completed and prescription saved successfully!');
   } catch (err) {
-    console.error(err);
+    console.error('Failed to complete appointment', err);
+    alert('Failed to complete appointment.');
   }
 };
 

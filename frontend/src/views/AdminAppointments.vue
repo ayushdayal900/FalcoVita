@@ -1,115 +1,119 @@
 <template>
-  <div class="dashboard-layout flex h-screen overflow-hidden bg-slate-50">
+  <div class="d-flex min-vh-100 bg-light">
     <Sidebar />
     
-    <main class="flex-1 flex flex-col overflow-hidden relative">
+    <main class="flex-grow-1 d-flex flex-column overflow-hidden">
       <!-- Top Header -->
-      <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+      <header class="bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between sticky-top z-2 shadow-sm">
         <div>
-          <h2 class="text-2xl font-bold text-slate-800">All Appointments</h2>
-          <p class="text-sm text-slate-500">Monitor and manage hospital appointments</p>
+          <h2 class="h4 fw-bold text-dark mb-0">All Appointments</h2>
+          <p class="text-muted small mb-0">Monitor and manage hospital appointments</p>
         </div>
       </header>
 
-      <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
-        <div class="max-w-7xl mx-auto">
+      <div class="flex-grow-1 overflow-auto p-4 custom-scrollbar">
+        <div class="container-fluid p-0" style="max-width: 1400px;">
           
           <!-- Search Bar -->
-          <SearchBar 
-            v-model="search" 
-            placeholder="Search by patient or doctor name..." 
-            @clear="search = ''"
-            class="mb-6"
-          />
+          <div class="card border-0 shadow-sm mb-4" style="max-width: 600px;">
+            <div class="card-body p-2">
+              <SearchBar 
+                v-model="search" 
+                placeholder="Search by patient or doctor name..." 
+                @clear="search = ''"
+              />
+            </div>
+          </div>
 
           <!-- Filter Tabs -->
-          <div class="bg-white rounded-2xl p-2 shadow-sm border border-slate-100 mb-6 inline-flex">
-            <button 
-              v-for="status in ['all', 'scheduled', 'completed', 'cancelled']" 
-              :key="status"
-              @click="filterStatus = status" 
-              :class="[
-                'px-6 py-2.5 rounded-xl text-sm font-medium transition-all',
-                filterStatus === status 
-                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-              ]">
-              {{ status.charAt(0).toUpperCase() + status.slice(1) }}
-              <span v-if="status === 'all'" class="ml-2 bg-white/20 px-1.5 py-0.5 rounded-full text-xs">{{ appointments.length }}</span>
-            </button>
+          <div class="mb-4">
+            <div class="btn-group shadow-sm" role="group">
+              <button 
+                v-for="status in ['all', 'scheduled', 'completed', 'cancelled']" 
+                :key="status"
+                @click="filterStatus = status" 
+                class="btn btn-sm fw-medium px-4 py-2"
+                :class="filterStatus === status ? 'btn-primary' : 'btn-white bg-white text-secondary border-light'"
+              >
+                {{ status.charAt(0).toUpperCase() + status.slice(1) }}
+                <span v-if="status === 'all'" class="badge bg-white text-primary ms-2 rounded-pill">{{ appointments.length }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Loading State -->
-          <div v-if="loading" class="flex flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
-            <p class="text-slate-500 font-medium">Loading appointments...</p>
+          <div v-if="loading" class="text-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted fw-medium">Loading appointments...</p>
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="filteredAppointments.length === 0" class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div v-else-if="filteredAppointments.length === 0" class="text-center py-5 bg-white rounded-4 border border-dashed">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-muted">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">No appointments found</h3>
-            <p class="text-slate-500">There are no appointments with this status.</p>
+            <h3 class="h5 fw-bold text-dark mb-1">No appointments found</h3>
+            <p class="text-muted small">There are no appointments with this status.</p>
           </div>
 
           <!-- Appointments Table -->
-          <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-50/50 border-b border-slate-200">
-                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</th>
-                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Patient</th>
-                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Doctor</th>
-                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Department</th>
-                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                    <th class="p-5 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+          <div v-else class="card border-0 shadow-sm overflow-hidden">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                  <tr>
+                    <th class="px-4 py-3 text-secondary text-uppercase small fw-bold border-0">Date & Time</th>
+                    <th class="px-4 py-3 text-secondary text-uppercase small fw-bold border-0">Patient</th>
+                    <th class="px-4 py-3 text-secondary text-uppercase small fw-bold border-0">Doctor</th>
+                    <th class="px-4 py-3 text-secondary text-uppercase small fw-bold border-0">Department</th>
+                    <th class="px-4 py-3 text-secondary text-uppercase small fw-bold border-0">Status</th>
+                    <th class="px-4 py-3 text-secondary text-uppercase small fw-bold border-0 text-end">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr v-for="appt in filteredAppointments" :key="appt.id" class="hover:bg-slate-50/80 transition-colors group">
-                    <td class="p-5">
-                      <div class="flex flex-col">
-                        <span class="font-bold text-slate-800">{{ new Date(appt.appointment_date).toLocaleDateString() }}</span>
-                        <span class="text-xs text-slate-500">{{ new Date(appt.appointment_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</span>
+                <tbody class="border-top-0">
+                  <tr v-for="appt in filteredAppointments" :key="appt.id">
+                    <td class="px-4 py-3 border-bottom-0">
+                      <div class="d-flex flex-column">
+                        <span class="fw-bold text-dark">{{ new Date(appt.appointment_date).toLocaleDateString() }}</span>
+                        <span class="text-muted small">{{ new Date(appt.appointment_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}</span>
                       </div>
                     </td>
-                    <td class="p-5">
-                      <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                    <td class="px-4 py-3 border-bottom-0">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
                           {{ appt.patient?.user?.name?.charAt(0) }}
                         </div>
-                        <span class="font-medium text-slate-700">{{ appt.patient?.user?.name || 'Unknown' }}</span>
+                        <span class="fw-medium text-dark">{{ appt.patient?.user?.name || 'Unknown' }}</span>
                       </div>
                     </td>
-                    <td class="p-5">
-                      <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                    <td class="px-4 py-3 border-bottom-0">
+                      <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
                           {{ appt.doctor?.user?.name?.charAt(0) }}
                         </div>
-                        <span class="font-medium text-slate-700">Dr. {{ appt.doctor?.user?.name || 'Unknown' }}</span>
+                        <span class="fw-medium text-dark">Dr. {{ appt.doctor?.user?.name || 'Unknown' }}</span>
                       </div>
                     </td>
-                    <td class="p-5 text-sm text-slate-600">{{ appt.department?.name || 'N/A' }}</td>
-                    <td class="p-5">
-                      <span :class="getStatusClass(appt.status)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
-                        <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="getStatusDotClass(appt.status)"></span>
+                    <td class="px-4 py-3 border-bottom-0 text-muted small">{{ appt.department?.name || 'N/A' }}</td>
+                    <td class="px-4 py-3 border-bottom-0">
+                      <span :class="getStatusClass(appt.status)" class="badge rounded-pill fw-normal px-3 d-inline-flex align-items-center gap-1">
+                        <span class="d-inline-block rounded-circle" :class="getStatusDotClass(appt.status)" style="width: 6px; height: 6px;"></span>
                         {{ appt.status }}
                       </span>
                     </td>
-                    <td class="p-5 text-right">
-                      <div class="flex items-center justify-end gap-2">
-                        <button @click="editAppointment(appt)" class="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all" title="Edit">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <td class="px-4 py-3 border-bottom-0 text-end">
+                      <div class="d-flex align-items-center justify-content-end gap-2">
+                        <button @click="editAppointment(appt)" class="btn btn-sm btn-light text-primary" title="Edit">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button @click="deleteAppointment(appt.id)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <button @click="deleteAppointment(appt.id)" class="btn btn-sm btn-light text-danger" title="Delete">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
@@ -126,47 +130,47 @@
     </main>
 
     <!-- Edit Appointment Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-slate-800">Edit Appointment</h3>
-          <button @click="closeEditModal" class="text-slate-400 hover:text-slate-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div v-if="showEditModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold">Edit Appointment</h5>
+            <button type="button" class="btn-close" @click="closeEditModal"></button>
+          </div>
+          
+          <div class="modal-body p-4">
+            <form @submit.prevent="saveAppointment">
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Patient</label>
+                <input :value="editForm.patient_name" class="form-control bg-light" disabled />
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Doctor</label>
+                <input :value="editForm.doctor_name" class="form-control bg-light" disabled />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-bold small">Date & Time</label>
+                <input type="datetime-local" v-model="editForm.appointment_date" class="form-control" required />
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label fw-bold small">Status</label>
+                <select v-model="editForm.status" class="form-select" required>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              
+              <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <button type="button" @click="closeEditModal" class="btn btn-light">Cancel</button>
+                <button type="submit" class="btn btn-primary fw-bold px-4">Update Appointment</button>
+              </div>
+            </form>
+          </div>
         </div>
-        
-        <form @submit.prevent="saveAppointment" class="space-y-5">
-          <div class="form-group">
-            <label class="label">Patient</label>
-            <input :value="editForm.patient_name" class="input bg-slate-50 text-slate-500" disabled />
-          </div>
-          
-          <div class="form-group">
-            <label class="label">Doctor</label>
-            <input :value="editForm.doctor_name" class="input bg-slate-50 text-slate-500" disabled />
-          </div>
-
-          <div class="form-group">
-            <label class="label">Date & Time</label>
-            <input type="datetime-local" v-model="editForm.appointment_date" class="input" required />
-          </div>
-
-          <div class="form-group">
-            <label class="label">Status</label>
-            <select v-model="editForm.status" class="input" required>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-          
-          <div class="flex gap-4 pt-4 border-t border-slate-100 mt-4">
-            <button type="button" @click="closeEditModal" class="btn btn-outline flex-1 rounded-xl">Cancel</button>
-            <button type="submit" class="btn btn-primary flex-1 rounded-xl shadow-lg shadow-primary-500/20">Update Appointment</button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -226,22 +230,22 @@ const filteredAppointments = computed(() => {
 
 const getStatusClass = (status) => {
   const classes = {
-    'scheduled': 'bg-blue-50 text-blue-700',
-    'completed': 'bg-emerald-50 text-emerald-700',
-    'cancelled': 'bg-red-50 text-red-700',
-    'canceled': 'bg-red-50 text-red-700'
+    'scheduled': 'bg-primary bg-opacity-10 text-primary',
+    'completed': 'bg-success bg-opacity-10 text-success',
+    'cancelled': 'bg-danger bg-opacity-10 text-danger',
+    'canceled': 'bg-danger bg-opacity-10 text-danger'
   };
-  return classes[status] || 'bg-slate-50 text-slate-700';
+  return classes[status] || 'bg-secondary bg-opacity-10 text-secondary';
 };
 
 const getStatusDotClass = (status) => {
   const classes = {
-    'scheduled': 'bg-blue-500',
-    'completed': 'bg-emerald-500',
-    'cancelled': 'bg-red-500',
-    'canceled': 'bg-red-500'
+    'scheduled': 'bg-primary',
+    'completed': 'bg-success',
+    'cancelled': 'bg-danger',
+    'canceled': 'bg-danger'
   };
-  return classes[status] || 'bg-slate-500';
+  return classes[status] || 'bg-secondary';
 };
 
 const editAppointment = (appt) => {
@@ -301,3 +305,22 @@ onMounted(() => {
   fetchAppointments();
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+}
+</style>

@@ -241,6 +241,9 @@ class PatientHistory(BaseModel):
             "visit_type": self.visit_type,
             "visit_date": self.visit_date.isoformat() if self.visit_date else None,
             "diagnosis": self.diagnosis,
+            "prescriptions": [p.to_dict() for p in self.prescriptions],
+            "doctor": self.doctor.to_dict() if self.doctor else None,
+            "department": self.department.to_dict() if self.department else None,
         })
         return data
 

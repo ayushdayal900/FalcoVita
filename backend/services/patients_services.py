@@ -56,11 +56,16 @@ class PatientService:
             dob_value = datetime.fromisoformat(dob_value)
 
         # Create PATIENT
+        mrn = data.get('medical_record_number')
+        if not mrn:
+            import uuid
+            mrn = f"MRN-{str(uuid.uuid4())[:8].upper()}"
+
         new_patient = Patient(
             id=new_user.id,
             dob=dob_value,
             contact=data['contact'],
-            medical_record_number=data['medical_record_number'],
+            medical_record_number=mrn,
             doctor_id=data.get('doctor_id')   # optional
         )
         

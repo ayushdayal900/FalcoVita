@@ -109,10 +109,9 @@ def register():
     if role == "patient":
         dob = data.get('dob')
         contact = data.get('contact')
-        medical_record_number = data.get('medical_record_number')
         doctor_id = data.get('doctor_id')
 
-        if not (dob and contact and medical_record_number):
+        if not (dob and contact):
             return {"message": "Missing patient-specific fields"}, 400
 
         # Convert DOB into datetime
@@ -121,6 +120,9 @@ def register():
                 dob = datetime.fromisoformat(dob)
         except:
             return {"message": "Invalid dob format. Use YYYY-MM-DD"}, 400
+
+        import uuid
+        medical_record_number = f"MRN-{str(uuid.uuid4())[:8].upper()}"
 
         new_patient = Patient(
             id=user.id,

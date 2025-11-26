@@ -27,9 +27,16 @@ class PatientHistoryService:
     # ------------------------------------
     @staticmethod
     def get_by_patient(patient_id):
-        histories = PatientHistory.query.filter_by(patient_id=patient_id).all()
+        from sqlalchemy.orm import joinedload
+        histories = PatientHistory.query.options(
+            joinedload(PatientHistory.prescriptions),
+            joinedload(PatientHistory.doctor).joinedload(Doctor.user),
+            joinedload(PatientHistory.department)
+        ).filter_by(patient_id=patient_id).all()
+        
         if not histories:
-            raise ServiceError(f"No history found for patient {patient_id}")
+            # It's not necessarily an error if a patient has no history, just return empty list
+            return []
         return [h.to_dict() for h in histories]
 
     # ------------------------------------

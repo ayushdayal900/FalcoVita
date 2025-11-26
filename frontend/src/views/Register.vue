@@ -104,12 +104,7 @@
                         <label for="dob">Date of Birth</label>
                       </div>
                     </div>
-                    <div class="col-md-6">
-                      <div class="form-floating">
-                        <input type="text" class="form-control" id="mrn" v-model="form.medical_record_number" placeholder="MRN-12345" required>
-                        <label for="mrn">Medical Record Number</label>
-                      </div>
-                    </div>
+
                   </template>
                 </div>
 
@@ -176,7 +171,7 @@ const form = reactive({
   experience: '',
   // Patient
   dob: '',
-  medical_record_number: '',
+
 });
 
 const handleRegister = async () => {
@@ -202,7 +197,6 @@ const handleRegister = async () => {
     Object.assign(payload, {
       dob: form.dob,
       contact: form.contact_number, // Backend expects 'contact' for patient
-      medical_record_number: form.medical_record_number,
     });
   }
 

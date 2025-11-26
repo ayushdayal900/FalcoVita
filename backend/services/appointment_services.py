@@ -89,6 +89,8 @@ class AppointmentService:
             # Generate History and Prescription
             from backend.models import PatientHistory, Prescription
             
+            diagnosis = data.get("diagnosis", "Routine Checkup (Auto-generated)")
+            
             history = PatientHistory(
                 patient_id=appt.patient_id,
                 doctor_id=appt.doctor_id,
@@ -96,16 +98,21 @@ class AppointmentService:
                 appointment_id=appt.id,
                 visit_type="Consultation",
                 visit_date=datetime.now(),
-                diagnosis="Routine Checkup (Auto-generated)"
+                diagnosis=diagnosis
             )
             db.session.add(history)
             db.session.flush() # Get ID
 
+            prescription_data = data.get("prescription", {})
+            medicines = prescription_data.get("medicines", "General Health Supplements")
+            dosage = prescription_data.get("dosage", "1 tablet daily")
+            instructions = prescription_data.get("instructions", "Take after meals")
+
             prescription = Prescription(
                 history_id=history.id,
-                medicines="General Health Supplements",
-                dosage="1 tablet daily",
-                instructions="Take after meals"
+                medicines=medicines,
+                dosage=dosage,
+                instructions=instructions
             )
             db.session.add(prescription)
 
