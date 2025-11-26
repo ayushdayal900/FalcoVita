@@ -38,7 +38,7 @@
         <div class="max-w-7xl mx-auto space-y-8">
           
           <!-- Search Section -->
-          <div class="bg-white rounded-2xl p-1.5 shadow-sm border border-slate-100 max-w-2xl">
+          <div class="bg-white rounded-2xl p-2 shadow-sm border border-slate-100 max-w-2xl">
             <SearchBar 
               v-model="search" 
               placeholder="Search appointments by patient or doctor name..."
@@ -47,13 +47,13 @@
           </div>
 
           <!-- Loading State -->
-          <div v-if="loading" class="flex flex-col items-center justify-center py-20">
+          <div v-if="loading" class="flex flex-col items-center justify-center py-10">
             <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p class="text-slate-500 font-medium">Loading appointments...</p>
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="combinedItems.length === 0" class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+          <div v-else-if="combinedItems.length === 0" class="flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-dashed border-slate-200">
             <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -75,24 +75,24 @@
               
               <!-- Appointment Card -->
               <template v-if="item.type === 'appointment'">
-                <div class="h-1.5 w-full transition-colors duration-300" :class="{
+                <div class="w-full transition-colors duration-300" style="height: 6px;" :class="{
                   'bg-emerald-500': item.data.status === 'completed',
                   'bg-blue-500': item.data.status === 'scheduled',
-                  'bg-rose-500': item.data.status === 'canceled'
+                  'bg-rose-500': item.data.status === 'cancelled'
                 }"></div>
 
                 <div class="p-6 flex-1 flex flex-col">
                   <div class="flex justify-between items-start mb-6">
                     <div>
-                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide mb-3" :class="{
+                      <div class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-3" :class="{
                         'bg-emerald-50 text-emerald-700': item.data.status === 'completed',
                         'bg-blue-50 text-blue-700': item.data.status === 'scheduled',
-                        'bg-rose-50 text-rose-700': item.data.status === 'canceled'
+                        'bg-rose-50 text-rose-700': item.data.status === 'cancelled'
                       }">
-                        <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="{
+                        <span class="rounded-full" style="width: 6px; height: 6px; margin-right: 6px;" :class="{
                           'bg-emerald-500': item.data.status === 'completed',
                           'bg-blue-500': item.data.status === 'scheduled',
-                          'bg-rose-500': item.data.status === 'canceled'
+                          'bg-rose-500': item.data.status === 'cancelled'
                         }"></span>
                         {{ item.data.status }}
                       </div>
@@ -106,7 +106,7 @@
                   </div>
 
                   <div class="space-y-4 mb-8">
-                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                    <div class="flex items-center gap-3 text-sm text-slate-600">
                       <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -116,7 +116,7 @@
                         {{ new Date(item.data.appointment_date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                    <div class="flex items-center gap-3 text-sm text-slate-600">
                       <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -126,7 +126,7 @@
                         {{ new Date(item.data.appointment_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                    <div class="flex items-center gap-3 text-sm text-slate-600">
                       <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -138,13 +138,13 @@
 
                   <div class="mt-auto pt-6 border-t border-slate-100 flex gap-3">
                     <template v-if="item.data.status === 'scheduled'">
-                      <button @click="cancelAppointment(item.data.id)" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">
+                      <button @click="cancelAppointment(item.data.id)" class="flex-1 py-2 px-4 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">
                         Cancel
                       </button>
-                      <button @click="rescheduleAppointment(item.data)" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
+                      <button @click="rescheduleAppointment(item.data)" class="flex-1 py-2 px-4 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
                         Reschedule
                       </button>
-                      <button v-if="userRole === 'doctor'" @click="completeAppointment(item.data.id)" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all">
+                      <button v-if="userRole === 'doctor'" @click="completeAppointment(item.data.id)" class="flex-1 py-2 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all">
                         Complete
                       </button>
                     </template>
@@ -157,11 +157,11 @@
 
               <!-- Slot Card -->
               <template v-else>
-                <div class="h-1.5 w-full bg-slate-200"></div>
+                <div class="w-full bg-slate-200" style="height: 6px;"></div>
                 <div class="p-6 flex-1 flex flex-col">
                   <div class="flex justify-between items-start mb-6">
                     <div>
-                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-3">
+                      <div class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-3">
                         Available Slot
                       </div>
                       <h3 class="font-bold text-lg text-slate-800">
@@ -171,7 +171,7 @@
                   </div>
 
                   <div class="space-y-4 mb-8">
-                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                    <div class="flex items-center gap-3 text-sm text-slate-600">
                       <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -182,7 +182,7 @@
                   </div>
 
                   <div class="mt-auto pt-6 border-t border-slate-100">
-                    <button @click="deleteSlot(item.data.id)" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
+                    <button @click="deleteSlot(item.data.id)" class="w-full py-2 px-4 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -227,7 +227,7 @@
                   <select 
                     v-model="newAppt.doctor_id" 
                     @change="handleDoctorChange" 
-                    class="block w-full pl-4 pr-10 py-3.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer" 
+                    class="block w-full pl-4 pr-10 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer" 
                     required
                   >
                     <option value="" disabled>Choose a doctor...</option>
@@ -248,7 +248,7 @@
                 <div class="relative group">
                   <select 
                     v-model="newAppt.slot_id" 
-                    class="block w-full pl-4 pr-10 py-3.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100" 
+                    class="block w-full pl-4 pr-10 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100" 
                     required 
                     :disabled="!newAppt.doctor_id"
                   >
@@ -265,14 +265,14 @@
                 </div>
                 
                 <div v-if="newAppt.doctor_id" class="mt-2 min-h-[20px]">
-                  <p v-if="availableSlots.length === 0" class="text-xs font-medium text-rose-500 flex items-center gap-1.5 animate-pulse">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <p v-if="availableSlots.length === 0" class="text-xs font-medium text-rose-500 flex items-center gap-2 animate-pulse">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     No slots available for this doctor.
                   </p>
-                  <p v-else class="text-xs font-medium text-emerald-600 flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <p v-else class="text-xs font-medium text-emerald-600 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {{ availableSlots.length }} slots available
@@ -281,10 +281,10 @@
               </div>
               
               <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-                <button type="button" @click="showBookModal = false" class="px-6 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-slate-200">
+                <button type="button" @click="showBookModal = false" class="px-6 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-slate-200">
                   Cancel
                 </button>
-                <button type="submit" class="px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button type="submit" class="px-8 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Confirm Booking
                 </button>
               </div>
@@ -320,7 +320,7 @@
                 <input 
                   type="date" 
                   v-model="newSlot.date" 
-                  class="block w-full px-4 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
+                  class="block w-full px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
                   required 
                   :min="new Date().toISOString().split('T')[0]"
                 >
@@ -331,21 +331,21 @@
                   <input 
                     type="time" 
                     v-model="newSlot.startTime" 
-                    class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
+                    class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
                     required
                   >
                   <span class="text-slate-400 font-medium">to</span>
                   <input 
                     type="time" 
                     v-model="newSlot.endTime" 
-                    class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
+                    class="flex-1 px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
                     required
                   >
                 </div>
               </div>
               <div class="flex justify-end gap-3 pt-4">
-                <button type="button" @click="showAddSlotModal = false" class="px-6 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all">Cancel</button>
-                <button type="submit" class="px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all">Add Slot</button>
+                <button type="button" @click="showAddSlotModal = false" class="px-6 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all">Cancel</button>
+                <button type="submit" class="px-8 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all">Add Slot</button>
               </div>
             </form>
           </div>
@@ -494,7 +494,7 @@ const bookAppointment = async () => {
 const cancelAppointment = async (id) => {
   if (!confirm('Are you sure?')) return;
   try {
-    await api.put(`/appointments/${id}`, { status: 'canceled' });
+    await api.put(`/appointments/${id}`, { status: 'cancelled' });
     fetchAppointments();
   } catch (err) {
     console.error(err);
@@ -515,7 +515,7 @@ const rescheduleAppointment = async (appt) => {
   
   try {
     // 1. Cancel current appointment
-    await api.put(`/appointments/${appt.id}`, { status: 'canceled' });
+    await api.put(`/appointments/${appt.id}`, { status: 'cancelled' });
     
     // 2. Redirect to doctor's page
     router.push(`/doctors/${appt.doctor_id}`);

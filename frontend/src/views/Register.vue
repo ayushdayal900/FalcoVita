@@ -97,8 +97,20 @@
             <!-- Doctor Specific Fields -->
             <div v-if="role === 'doctor'" class="form-grid specific-fields animate-fade-in">
               <div class="form-group">
-                <label>Department ID</label>
-                <input type="number" v-model="form.department_id" class="form-input" placeholder="e.g. 1" required />
+                <label>Department</label>
+                <div class="relative">
+                  <select v-model="form.department_id" class="form-input appearance-none cursor-pointer" required>
+                    <option value="" disabled>Select Department</option>
+                    <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+                      {{ dept.name }}
+                    </option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               <div class="form-group">
                 <label>Experience (Years)</label>
@@ -161,9 +173,10 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import api from '@/services/api';
 
 const store = useStore();
 const router = useRouter();
@@ -171,6 +184,7 @@ const router = useRouter();
 const role = ref('patient');
 const loading = ref(false);
 const error = ref('');
+const departments = ref([]);
 
 const form = reactive({
   name: '',
@@ -224,6 +238,20 @@ const handleRegister = async () => {
     loading.value = false;
   }
 };
+
+const fetchDepartments = async () => {
+  try {
+    const response = await api.get('/departments/');
+    departments.value = response.data;
+  } catch (err) {
+    console.error('Failed to fetch departments', err);
+  }
+};
+
+onMounted(() => {
+  fetchDepartments();
+});
+
 </script>
 
 <style scoped>
