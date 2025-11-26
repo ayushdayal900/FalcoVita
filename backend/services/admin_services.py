@@ -98,6 +98,29 @@ class AdminService:
         doctor_user = User.query.filter_by(id=doctor_id, role='doctor').first()
         if not doctor_user:
             raise ServiceError("Doctor not found")
+        
+        doctor = doctor_user.doctor
+        if doctor:
+            # Cascade delete:
+            # 1. Delete appointments
+            for appointment in doctor.appointments:
+                db.session.delete(appointment)
+            
+            # 2. Delete medical histories (and their prescriptions)
+            for history in doctor.histories:
+                # Prescriptions cascade from history usually, but let's be safe if not configured
+                for prescription in history.prescriptions:
+                    db.session.delete(prescription)
+                db.session.delete(history)
+            
+            # 3. Unlink patients
+            for patient in doctor.patients:
+                patient.doctor_id = None
+            
+            # 4. Delete availabilities (cascade usually handles this but explicit is fine)
+            for slot in doctor.availabilities:
+                db.session.delete(slot)
+
         db.session.delete(doctor_user)
         db.session.commit()
 

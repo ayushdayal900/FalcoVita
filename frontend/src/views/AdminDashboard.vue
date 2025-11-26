@@ -1,23 +1,23 @@
 <template>
-  <div class="dashboard-layout flex h-screen overflow-hidden bg-slate-50 font-sans selection:bg-primary-500 selection:text-white">
+  <div class="d-flex min-vh-100 bg-light">
     <Sidebar />
     
-    <main class="flex-1 flex flex-col overflow-hidden relative">
+    <main class="flex-grow-1 d-flex flex-column overflow-hidden">
       <!-- Top Header -->
-      <header class="h-24 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 flex items-center justify-between px-10 sticky top-0 z-20 transition-all duration-300">
+      <header class="bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between sticky-top z-2">
         <div>
-          <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Admin Dashboard</h2>
-          <p class="text-slate-500 font-medium mt-1">Overview of hospital operations</p>
+          <h2 class="h4 fw-bold text-dark mb-0">Admin Dashboard</h2>
+          <p class="text-muted small mb-0">Overview of hospital operations</p>
         </div>
-        <div class="flex gap-4">
-          <button @click="showDoctorModal = true" class="btn bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-500/30 flex items-center gap-2.5 px-6 py-3 rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-primary-500/40 font-semibold tracking-wide">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+        <div class="d-flex gap-2">
+          <button @click="showDoctorModal = true" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             Add Doctor
           </button>
-          <button @click="showDepartmentModal = true" class="btn bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center gap-2.5 px-6 py-3 rounded-2xl transition-all shadow-sm hover:shadow-md font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button @click="showDepartmentModal = true" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             Departments
@@ -25,171 +25,196 @@
         </div>
       </header>
 
-      <div class="flex-1 overflow-y-auto p-10 custom-scrollbar scroll-smooth">
-        <div class="max-w-[1600px] mx-auto space-y-10">
+      <div class="flex-grow-1 overflow-auto p-4 custom-scrollbar">
+        <div class="container-fluid p-0" style="max-width: 1600px;">
           
           <!-- Statistics Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div class="row g-4 mb-4">
             <!-- Total Doctors -->
-            <div class="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-2xl shadow-blue-500/30 cursor-pointer hover:-translate-y-1 transition-all duration-500 border border-white/10 group" @click="showDoctorsList">
-              <div class="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-              <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-blue-500/30 rounded-full blur-2xl"></div>
-              
-              <div class="relative z-10">
-                <div class="flex justify-between items-start mb-8">
-                  <div class="p-3.5 bg-white/15 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-primary text-white border-0 shadow h-100 overflow-hidden cursor-pointer hover-lift" @click="showDoctorsList">
+                <div class="card-body position-relative p-4">
+                  <div class="position-absolute top-0 end-0 opacity-10 translate-middle-y me-n3 mt-n3">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                     </svg>
                   </div>
-                  <span class="text-xs font-bold bg-white/20 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm shadow-sm">Active</span>
-                </div>
-                <div>
-                  <h3 class="text-5xl font-bold mb-2 tracking-tight group-hover:scale-105 transition-transform origin-left">{{ stats.total_doctors }}</h3>
-                  <p class="text-blue-100 text-base font-medium opacity-90">Total Doctors</p>
+                  <div class="d-flex justify-content-between align-items-start mb-4 position-relative z-1">
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <span class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-25">Active</span>
+                  </div>
+                  <div class="position-relative z-1">
+                    <h3 class="display-5 fw-bold mb-1">{{ stats.total_doctors }}</h3>
+                    <p class="text-white-50 mb-0 fw-medium">Total Doctors</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Total Patients -->
-            <div class="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-2xl shadow-emerald-500/30 cursor-pointer hover:-translate-y-1 transition-all duration-500 border border-white/10 group" @click="showPatientsList">
-              <div class="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-              <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-emerald-400/30 rounded-full blur-2xl"></div>
-
-              <div class="relative z-10">
-                <div class="flex justify-between items-start mb-8">
-                  <div class="p-3.5 bg-white/15 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-success text-white border-0 shadow h-100 overflow-hidden cursor-pointer hover-lift" @click="showPatientsList">
+                <div class="card-body position-relative p-4">
+                   <div class="position-absolute top-0 end-0 opacity-10 translate-middle-y me-n3 mt-n3">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4 0 1 1 1H1zm4 0c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                     </svg>
                   </div>
-                  <span class="text-xs font-bold bg-white/20 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm shadow-sm">+12%</span>
-                </div>
-                <div>
-                  <h3 class="text-5xl font-bold mb-2 tracking-tight group-hover:scale-105 transition-transform origin-left">{{ stats.total_patients }}</h3>
-                  <p class="text-emerald-100 text-base font-medium opacity-90">Total Patients</p>
+                  <div class="d-flex justify-content-between align-items-start mb-4 position-relative z-1">
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                    <span class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-25">+12%</span>
+                  </div>
+                  <div class="position-relative z-1">
+                    <h3 class="display-5 fw-bold mb-1">{{ stats.total_patients }}</h3>
+                    <p class="text-white-50 mb-0 fw-medium">Total Patients</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Total Appointments -->
-            <div class="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-violet-600 to-violet-700 text-white shadow-2xl shadow-violet-500/30 cursor-pointer hover:-translate-y-1 transition-all duration-500 border border-white/10 group" @click="showAllAppointments">
-              <div class="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-              <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-violet-500/30 rounded-full blur-2xl"></div>
-
-              <div class="relative z-10">
-                <div class="flex justify-between items-start mb-8">
-                  <div class="p-3.5 bg-white/15 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-info text-white border-0 shadow h-100 overflow-hidden cursor-pointer hover-lift" @click="showAllAppointments">
+                <div class="card-body position-relative p-4">
+                   <div class="position-absolute top-0 end-0 opacity-10 translate-middle-y me-n3 mt-n3">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                     </svg>
                   </div>
-                </div>
-                <div>
-                  <h3 class="text-5xl font-bold mb-2 tracking-tight group-hover:scale-105 transition-transform origin-left">{{ stats.total_appointments }}</h3>
-                  <p class="text-violet-100 text-base font-medium opacity-90">Total Appointments</p>
+                  <div class="d-flex justify-content-between align-items-start mb-4 position-relative z-1">
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="position-relative z-1">
+                    <h3 class="display-5 fw-bold mb-1">{{ stats.total_appointments }}</h3>
+                    <p class="text-white-50 mb-0 fw-medium">Total Appointments</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Upcoming -->
-            <div class="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-2xl shadow-orange-500/30 cursor-pointer hover:-translate-y-1 transition-all duration-500 border border-white/10 group" @click="showUpcomingAppointments">
-              <div class="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-              <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-orange-400/30 rounded-full blur-2xl"></div>
-
-              <div class="relative z-10">
-                <div class="flex justify-between items-start mb-8">
-                  <div class="p-3.5 bg-white/15 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-warning text-white border-0 shadow h-100 overflow-hidden cursor-pointer hover-lift" @click="showUpcomingAppointments">
+                <div class="card-body position-relative p-4">
+                   <div class="position-absolute top-0 end-0 opacity-10 translate-middle-y me-n3 mt-n3">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                     </svg>
                   </div>
-                  <span class="text-xs font-bold bg-white/20 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm shadow-sm">Next 24h</span>
-                </div>
-                <div>
-                  <h3 class="text-5xl font-bold mb-2 tracking-tight group-hover:scale-105 transition-transform origin-left">{{ stats.upcoming_appointments }}</h3>
-                  <p class="text-orange-100 text-base font-medium opacity-90">Upcoming</p>
+                  <div class="d-flex justify-content-between align-items-start mb-4 position-relative z-1">
+                    <div class="bg-white bg-opacity-25 rounded p-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-25">Next 24h</span>
+                  </div>
+                  <div class="position-relative z-1">
+                    <h3 class="display-5 fw-bold mb-1">{{ stats.upcoming_appointments }}</h3>
+                    <p class="text-white-50 mb-0 fw-medium">Upcoming</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Search Section -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-lg shadow-slate-200/50 border border-white/50">
-            <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              Quick Search
-            </h3>
-            <SearchBar 
-              v-model="searchQuery" 
-              v-model:searchType="searchType"
-              placeholder="Search by name, email or ID..."
-              :showTypeSelector="true"
-              :types="['doctor', 'patient']"
-              @search="performSearch"
-              @clear="searchQuery = ''; searchResults = null"
-              class="w-full"
-            />
+          <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4">
+              <h3 class="h5 fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-primary">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Quick Search
+              </h3>
+              <SearchBar 
+                v-model="searchQuery" 
+                v-model:searchType="searchType"
+                placeholder="Search by name, email or ID..."
+                :showTypeSelector="true"
+                :types="['doctor', 'patient']"
+                @search="performSearch"
+                @clear="searchQuery = ''; searchResults = null"
+                class="w-100"
+              />
 
-            <!-- Search Results -->
-            <div v-if="searchResults" class="mt-8 space-y-8 animate-fade-in">
-              <div v-if="searchResults.doctors.length > 0">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">Doctors Found</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  <div v-for="doc in searchResults.doctors" :key="doc.id" 
-                       class="flex justify-between items-center p-5 bg-white rounded-2xl border border-slate-100 hover:border-primary-200 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 group">
-                    <div class="flex items-center gap-4">
-                      <div class="w-12 h-12 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center font-bold text-lg group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300 shadow-sm">
-                        {{ doc.name.charAt(0) }}
+              <!-- Search Results -->
+              <div v-if="searchResults" class="mt-4 animate-fade-in">
+                <div v-if="searchResults.doctors.length > 0" class="mb-4">
+                  <h4 class="h6 fw-bold text-muted text-uppercase mb-3">Doctors Found</h4>
+                  <div class="row g-3">
+                    <div v-for="doc in searchResults.doctors" :key="doc.id" class="col-md-6 col-lg-4">
+                      <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                          <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 48px; height: 48px;">
+                              {{ doc.name.charAt(0) }}
+                            </div>
+                            <div>
+                              <p class="fw-bold mb-0 text-dark">{{ doc.name }}</p>
+                              <p class="small text-muted mb-0">{{ doc.email }}</p>
+                            </div>
+                          </div>
+                          <div class="d-flex gap-1">
+                            <button @click="editDoctor(doc)" class="btn btn-sm btn-light text-primary" title="Edit">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button @click="deleteDoctor(doc.id)" class="btn btn-sm btn-light text-danger" title="Delete">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p class="font-bold text-slate-800 group-hover:text-primary-700 transition-colors">{{ doc.name }}</p>
-                        <p class="text-xs text-slate-500 font-medium">{{ doc.email }}</p>
-                      </div>
-                    </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button @click="editDoctor(doc)" class="p-2.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all" title="Edit">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button @click="deleteDoctor(doc.id)" class="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div v-if="searchResults.patients.length > 0">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">Patients Found</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  <div v-for="pat in searchResults.patients" :key="pat.id" 
-                       class="flex justify-between items-center p-5 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 group">
-                    <div class="flex items-center gap-4">
-                      <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300 shadow-sm">
-                        {{ pat.name.charAt(0) }}
+                <div v-if="searchResults.patients.length > 0">
+                  <h4 class="h6 fw-bold text-muted text-uppercase mb-3">Patients Found</h4>
+                  <div class="row g-3">
+                    <div v-for="pat in searchResults.patients" :key="pat.id" class="col-md-6 col-lg-4">
+                      <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                          <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center fw-bold fs-5" style="width: 48px; height: 48px;">
+                              {{ pat.name.charAt(0) }}
+                            </div>
+                            <div>
+                              <p class="fw-bold mb-0 text-dark">{{ pat.name }}</p>
+                              <p class="small text-muted mb-0">{{ pat.email }}</p>
+                            </div>
+                          </div>
+                          <div class="d-flex gap-1">
+                            <button @click="editPatient(pat)" class="btn btn-sm btn-light text-success" title="Edit">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button @click="deletePatient(pat.id)" class="btn btn-sm btn-light text-danger" title="Delete">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p class="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">{{ pat.name }}</p>
-                        <p class="text-xs text-slate-500 font-medium">{{ pat.email }}</p>
-                      </div>
-                    </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button @click="editPatient(pat)" class="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Edit">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button @click="deletePatient(pat.id)" class="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -198,56 +223,50 @@
           </div>
 
           <!-- Quick Actions Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-white p-10 rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100/50 flex flex-col items-center text-center hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-500 group cursor-pointer relative overflow-hidden" @click="showDoctorsList">
-              <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-              <div class="w-24 h-24 bg-blue-50 rounded-[2rem] flex items-center justify-center mb-8 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-lg shadow-blue-500/20 group-hover:scale-110 group-hover:rotate-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="card border-0 shadow-sm h-100 hover-lift cursor-pointer" @click="showDoctorsList">
+                <div class="card-body p-4 text-center d-flex flex-column align-items-center">
+                  <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h4 class="fw-bold text-dark">Manage Doctors</h4>
+                  <p class="text-muted small mb-4">View profiles, assign departments, and manage schedules efficiently.</p>
+                  <button class="btn btn-outline-primary w-100 mt-auto rounded-pill fw-bold">View All Doctors</button>
+                </div>
               </div>
-              <h3 class="text-2xl font-bold text-slate-800 mb-3 group-hover:text-blue-600 transition-colors">Manage Doctors</h3>
-              <p class="text-slate-500 mb-10 leading-relaxed max-w-xs mx-auto">View profiles, assign departments, and manage schedules efficiently.</p>
-              <button class="w-full py-4 px-6 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 group-hover:shadow-lg group-hover:shadow-blue-500/25 mt-auto">
-                View All Doctors
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
             </div>
 
-            <div class="bg-white p-10 rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100/50 flex flex-col items-center text-center hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2 transition-all duration-500 group cursor-pointer relative overflow-hidden" @click="showPatientsList">
-              <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-              <div class="w-24 h-24 bg-emerald-50 rounded-[2rem] flex items-center justify-center mb-8 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-500 shadow-lg shadow-emerald-500/20 group-hover:scale-110 group-hover:rotate-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+            <div class="col-md-4">
+              <div class="card border-0 shadow-sm h-100 hover-lift cursor-pointer" @click="showPatientsList">
+                <div class="card-body p-4 text-center d-flex flex-column align-items-center">
+                  <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <h4 class="fw-bold text-dark">Manage Patients</h4>
+                  <p class="text-muted small mb-4">Access medical records, history, and patient details securely.</p>
+                  <button class="btn btn-outline-success w-100 mt-auto rounded-pill fw-bold">View All Patients</button>
+                </div>
               </div>
-              <h3 class="text-2xl font-bold text-slate-800 mb-3 group-hover:text-emerald-600 transition-colors">Manage Patients</h3>
-              <p class="text-slate-500 mb-10 leading-relaxed max-w-xs mx-auto">Access medical records, history, and patient details securely.</p>
-              <button class="w-full py-4 px-6 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-emerald-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 group-hover:shadow-lg group-hover:shadow-emerald-500/25 mt-auto">
-                View All Patients
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
             </div>
 
-            <div class="bg-white p-10 rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100/50 flex flex-col items-center text-center hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-2 transition-all duration-500 group cursor-pointer relative overflow-hidden" @click="showAllAppointments">
-              <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-violet-400 to-violet-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-              <div class="w-24 h-24 bg-violet-50 rounded-[2rem] flex items-center justify-center mb-8 text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-all duration-500 shadow-lg shadow-violet-500/20 group-hover:scale-110 group-hover:rotate-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+            <div class="col-md-4">
+              <div class="card border-0 shadow-sm h-100 hover-lift cursor-pointer" @click="showAllAppointments">
+                <div class="card-body p-4 text-center d-flex flex-column align-items-center">
+                  <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h4 class="fw-bold text-dark">Appointments</h4>
+                  <p class="text-muted small mb-4">Monitor scheduled visits and appointment history in real-time.</p>
+                  <button class="btn btn-outline-info w-100 mt-auto rounded-pill fw-bold">View All Appointments</button>
+                </div>
               </div>
-              <h3 class="text-2xl font-bold text-slate-800 mb-3 group-hover:text-violet-600 transition-colors">Appointments</h3>
-              <p class="text-slate-500 mb-10 leading-relaxed max-w-xs mx-auto">Monitor scheduled visits and appointment history in real-time.</p>
-              <button class="w-full py-4 px-6 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-violet-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 group-hover:shadow-lg group-hover:shadow-violet-500/25 mt-auto">
-                View All Appointments
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </button>
             </div>
           </div>
 
@@ -256,71 +275,56 @@
     </main>
 
     <!-- Department Modal -->
-    <div v-if="showDepartmentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden transform transition-all scale-100">
-        <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm">
-          <div>
-            <h3 class="text-2xl font-bold text-slate-800">Manage Departments</h3>
-            <p class="text-slate-500 text-sm mt-1">Add or remove hospital departments</p>
+    <div v-if="showDepartmentModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold">Manage Departments</h5>
+            <button type="button" class="btn-close" @click="showDepartmentModal = false"></button>
           </div>
-          <button @click="showDepartmentModal = false" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div class="p-8 overflow-y-auto custom-scrollbar">
-          <!-- Add Department Form -->
-          <form @submit.prevent="addDepartment" class="mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
-            <h4 class="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Add New Department
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <input v-model="newDept.name" placeholder="Department Name" class="input bg-white h-12" required />
-              <input v-model="newDept.overview" placeholder="Overview (Optional)" class="input bg-white h-12" />
-            </div>
-            <button type="submit" class="btn btn-primary w-full mt-5 rounded-xl h-12 font-bold shadow-lg shadow-primary-500/20">Add Department</button>
-          </form>
-
-          <!-- Departments List -->
-          <div class="space-y-4">
-            <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3 ml-1">Existing Departments</h4>
-            <div v-for="dept in departments" :key="dept.id" 
-                 class="group border border-slate-100 rounded-2xl p-5 hover:shadow-lg hover:border-primary-100 transition-all bg-white duration-300">
-              <div class="flex justify-between items-start mb-4">
-                <div>
-                  <p class="font-bold text-lg text-slate-800 group-hover:text-primary-700 transition-colors">{{ dept.name }}</p>
-                  <p class="text-xs font-bold text-slate-500 bg-slate-100 inline-block px-3 py-1 rounded-full mt-2 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                    {{ dept.doctor_count }} Doctors Assigned
-                  </p>
+          <div class="modal-body p-4">
+            <!-- Add Department Form -->
+            <form @submit.prevent="addDepartment" class="mb-4 p-3 bg-light rounded-3 border">
+              <h6 class="fw-bold text-primary mb-3 text-uppercase small">Add New Department</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <input v-model="newDept.name" placeholder="Department Name" class="form-control" required />
                 </div>
-                <button @click="deleteDepartment(dept.id)" 
-                        class="text-slate-400 hover:text-red-500 transition-colors p-2.5 hover:bg-red-50 rounded-xl"
-                        :disabled="dept.doctor_count > 0"
-                        title="Delete Department">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                <div class="col-md-6">
+                  <input v-model="newDept.overview" placeholder="Overview (Optional)" class="form-control" />
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary w-100">Add Department</button>
+                </div>
               </div>
-              
-              <!-- Doctors List -->
-              <div v-if="dept.doctors && dept.doctors.length > 0" class="pl-5 border-l-2 border-primary-100 group-hover:border-primary-300 transition-colors">
-                <ul class="space-y-3 mt-3">
-                  <li v-for="doc in dept.doctors" :key="doc.id" class="text-sm text-slate-600 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shadow-sm">
-                      {{ doc.user?.name?.charAt(0) }}
+            </form>
+
+            <!-- Departments List -->
+            <div>
+              <h6 class="fw-bold text-muted text-uppercase small mb-3">Existing Departments</h6>
+              <div class="list-group">
+                <div v-for="dept in departments" :key="dept.id" class="list-group-item list-group-item-action border-0 mb-2 rounded shadow-sm">
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1 fw-bold text-dark">{{ dept.name }}</h6>
+                      <small class="text-muted">{{ dept.doctor_count }} Doctors Assigned</small>
                     </div>
-                    <span class="font-medium">{{ doc.user?.name || 'Unknown Doctor' }}</span>
-                  </li>
-                </ul>
-              </div>
-              <div v-else class="text-sm text-slate-400 italic pl-5 border-l-2 border-slate-100 mt-3">
-                No doctors currently assigned
+                    <button @click="deleteDepartment(dept.id)" class="btn btn-sm btn-outline-danger" :disabled="dept.doctor_count > 0">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <!-- Doctors List -->
+                  <div v-if="dept.doctors && dept.doctors.length > 0" class="mt-2 ps-3 border-start border-primary">
+                    <ul class="list-unstyled mb-0 small text-muted">
+                      <li v-for="doc in dept.doctors" :key="doc.id" class="mb-1">
+                        {{ doc.user?.name || 'Unknown Doctor' }}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -329,74 +333,61 @@
     </div>
 
     <!-- Add Doctor Modal -->
-    <div v-if="showDoctorModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-        <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 backdrop-blur-sm">
-          <div>
-            <h3 class="text-2xl font-bold text-slate-800">Add New Doctor</h3>
-            <p class="text-slate-500 text-sm mt-1">Create a new doctor account</p>
+    <div v-if="showDoctorModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h5 class="modal-title fw-bold">Add New Doctor</h5>
+            <button type="button" class="btn-close" @click="showDoctorModal = false"></button>
           </div>
-          <button @click="showDoctorModal = false" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div class="p-8 overflow-y-auto custom-scrollbar">
-          <form @submit.prevent="createDoctor" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="form-group">
-                <label class="label font-bold text-slate-700 mb-2">Full Name</label>
-                <input v-model="newDoctor.name" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="Dr. John Doe" required />
-              </div>
-              <div class="form-group">
-                <label class="label font-bold text-slate-700 mb-2">Email Address</label>
-                <input type="email" v-model="newDoctor.email" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="doctor@hospital.com" required />
-              </div>
-              <div class="form-group">
-                <label class="label font-bold text-slate-700 mb-2">Password</label>
-                <input type="password" v-model="newDoctor.password" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="••••••••" required />
-              </div>
-              <div class="form-group">
-                <label class="label font-bold text-slate-700 mb-2">Contact Number</label>
-                <input v-model="newDoctor.contact_number" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="+1 234 567 890" required />
-              </div>
-              <div class="form-group md:col-span-2">
-                <label class="label font-bold text-slate-700 mb-2">Department</label>
-                <div class="relative">
-                  <select v-model="newDoctor.department_id" class="input h-12 bg-slate-50 focus:bg-white transition-colors appearance-none" required>
+          <div class="modal-body p-4">
+            <form @submit.prevent="createDoctor">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Full Name</label>
+                  <input v-model="newDoctor.name" class="form-control" placeholder="Dr. John Doe" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Email Address</label>
+                  <input type="email" v-model="newDoctor.email" class="form-control" placeholder="doctor@hospital.com" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Password</label>
+                  <input type="password" v-model="newDoctor.password" class="form-control" placeholder="••••••••" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Contact Number</label>
+                  <input v-model="newDoctor.contact_number" class="form-control" placeholder="+1 234 567 890" required />
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold small">Department</label>
+                  <select v-model="newDoctor.department_id" class="form-select" required>
                     <option value="">Select Department</option>
                     <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                       {{ dept.name }}
                     </option>
                   </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Specialization</label>
+                  <input v-model="newDoctor.specialization" class="form-control" placeholder="e.g. Cardiology" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-bold small">Experience (Years)</label>
+                  <input type="number" v-model="newDoctor.experience" class="form-control" placeholder="e.g. 10" required />
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-bold small">Qualifications</label>
+                  <input v-model="newDoctor.qualifications" class="form-control" placeholder="e.g. MBBS, MD, PhD" required />
                 </div>
               </div>
-              <div class="form-group">
-                <label class="label font-bold text-slate-700 mb-2">Specialization</label>
-                <input v-model="newDoctor.specialization" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="e.g. Cardiology" required />
+              
+              <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                <button type="button" @click="showDoctorModal = false" class="btn btn-light flex-grow-1">Cancel</button>
+                <button type="submit" class="btn btn-primary flex-grow-1 fw-bold">Create Doctor Account</button>
               </div>
-              <div class="form-group">
-                <label class="label font-bold text-slate-700 mb-2">Experience (Years)</label>
-                <input type="number" v-model="newDoctor.experience" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="e.g. 10" required />
-              </div>
-              <div class="form-group md:col-span-2">
-                <label class="label font-bold text-slate-700 mb-2">Qualifications</label>
-                <input v-model="newDoctor.qualifications" class="input h-12 bg-slate-50 focus:bg-white transition-colors" placeholder="e.g. MBBS, MD, PhD" required />
-              </div>
-            </div>
-            
-            <div class="flex gap-4 pt-6 border-t border-slate-100 mt-6">
-              <button type="button" @click="showDoctorModal = false" class="btn btn-outline flex-1 rounded-xl h-12 font-semibold border-slate-300 hover:bg-slate-50 hover:text-slate-800">Cancel</button>
-              <button type="submit" class="btn btn-primary flex-1 rounded-xl h-12 font-bold shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30">Create Doctor Account</button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -548,3 +539,31 @@ onMounted(() => {
   fetchDepartments();
 });
 </script>
+
+<style scoped>
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+}
+</style>

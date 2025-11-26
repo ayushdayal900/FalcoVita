@@ -77,7 +77,9 @@ class AdminDoctorResource(Resource):
             AdminService.delete_doctor_by_id(id)
             return {"message": "Doctor deleted successfully"}, 200
         except ServiceError as e:
-            return {"message": str(e)}, 404
+            if "not found" in str(e).lower():
+                return {"message": str(e)}, 404
+            return {"message": str(e)}, 400
 
 
 # ------------------------------------

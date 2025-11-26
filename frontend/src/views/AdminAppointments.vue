@@ -228,7 +228,8 @@ const getStatusClass = (status) => {
   const classes = {
     'scheduled': 'bg-blue-50 text-blue-700',
     'completed': 'bg-emerald-50 text-emerald-700',
-    'cancelled': 'bg-red-50 text-red-700'
+    'cancelled': 'bg-red-50 text-red-700',
+    'canceled': 'bg-red-50 text-red-700'
   };
   return classes[status] || 'bg-slate-50 text-slate-700';
 };
@@ -237,7 +238,8 @@ const getStatusDotClass = (status) => {
   const classes = {
     'scheduled': 'bg-blue-500',
     'completed': 'bg-emerald-500',
-    'cancelled': 'bg-red-500'
+    'cancelled': 'bg-red-500',
+    'canceled': 'bg-red-500'
   };
   return classes[status] || 'bg-slate-500';
 };

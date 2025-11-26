@@ -12,7 +12,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "axios": "^1.13.2",
+    "bootstrap": "^5.3.8",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3",
     "vuex": "^4.1.0"

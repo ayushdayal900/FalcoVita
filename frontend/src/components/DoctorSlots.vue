@@ -1,40 +1,56 @@
 <template>
-  <div class="card p-6 shadow-sm">
-    <h3 class="text-lg font-bold mb-4">Available Slots</h3>
-
-    <div v-if="loading" class="text-center py-4 text-muted">Loading slots...</div>
-
-    <div v-if="slots.length === 0" class="text-center py-8 text-red-500">
-      No available slots
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 px-4">
+      <h3 class="h5 fw-bold text-dark mb-0">Available Slots</h3>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div
-        v-for="slot in slots"
-        :key="slot.id"
-        class="p-4 border rounded bg-slate-50 flex justify-between items-center"
-      >
-        <div>
-          <p class="font-medium">
-            {{ new Date(slot.available_date).toLocaleDateString() }}
-          </p>
-          <p class="text-sm text-muted">{{ slot.time_slot }}</p>
+    <div class="card-body p-4">
+      <div v-if="loading" class="text-center py-4">
+        <div class="spinner-border text-primary mb-2" role="status">
+          <span class="visually-hidden">Loading...</span>
         </div>
+        <p class="text-muted small mb-0">Loading slots...</p>
+      </div>
 
-        <button
-          class="btn btn-primary px-3 py-1"
-          @click="bookSlot(slot)"
-          :disabled="slot.status === 'booked'"
+      <div v-else-if="slots.length === 0" class="text-center py-5">
+        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-muted">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-muted fw-medium mb-0">No available slots found.</p>
+      </div>
+
+      <div v-else class="row g-3">
+        <div
+          v-for="slot in slots"
+          :key="slot.id"
+          class="col-md-6 col-lg-4"
         >
-          Book
-        </button>
+          <div class="p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center hover-shadow transition-all">
+            <div>
+              <p class="fw-bold text-dark mb-0">
+                {{ new Date(slot.available_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) }}
+              </p>
+              <p class="text-primary small fw-bold mb-0">{{ slot.time_slot }}</p>
+            </div>
+
+            <button
+              class="btn btn-sm btn-primary px-3 fw-bold"
+              @click="bookSlot(slot)"
+              :disabled="slot.status === 'booked'"
+            >
+              Book
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineProps } from "vue";
 import api from "@/services/api";
 
 const props = defineProps({
@@ -60,6 +76,10 @@ const loadSlots = async () => {
 const bookSlot = async (slot) => {
   if (!props.departmentId) {
     alert("Error: Missing department information.");
+    return;
+  }
+
+  if (!confirm(`Confirm booking for ${new Date(slot.available_date).toLocaleDateString()} at ${slot.time_slot}?`)) {
     return;
   }
 
@@ -93,3 +113,14 @@ const bookSlot = async (slot) => {
 
 onMounted(loadSlots);
 </script>
+
+<style scoped>
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  background-color: #fff !important;
+  border-color: var(--bs-primary) !important;
+}
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+</style>

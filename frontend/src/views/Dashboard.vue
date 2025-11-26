@@ -1,52 +1,67 @@
 <template>
-  <div class="dashboard-layout flex h-screen overflow-hidden">
+  <div class="d-flex min-vh-100 bg-light">
     <Sidebar />
 
-    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-      <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm">
-        <h2 class="text-xl font-semibold">Dashboard</h2>
+    <main class="flex-grow-1 d-flex flex-column overflow-hidden">
+      <header class="bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between shadow-sm sticky-top z-2">
+        <h2 class="h4 fw-bold text-dark mb-0">Dashboard</h2>
 
-        <div class="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-100 to-blue-200 border border-blue-300 shadow-sm">
-          <p class="text-sm">
-            <span class="text-slate-600">Welcome back,</span>
-            <span class="text-blue-700 font-semibold ml-1">{{ userName }}</span>
-          </p>
+        <div class="d-flex align-items-center bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-pill px-3 py-2">
+          <span class="text-muted small me-1">Welcome back,</span>
+          <span class="text-primary fw-bold small">{{ userName }}</span>
         </div>
       </header>
 
-      <div class="p-6 overflow-y-auto">
-        <div class="max-w-7xl mx-auto">
+      <div class="flex-grow-1 overflow-auto p-4 custom-scrollbar">
+        <div class="container-fluid p-0" style="max-width: 1400px;">
 
-          
-          <!-- Departments Section -->
-          <div class="mb-10">
-            <h3 class="text-xl font-bold text-slate-800 mb-6">Departments</h3>
+          <!-- Doctor Dashboard View -->
+          <template v-if="userRole === 'doctor'">
+            <DoctorDashboard 
+              :todayAppointments="todayAppointments"
+              :totalPatients="totalPatients"
+              :weekCompleted="weekCompleted"
+              :upcomingAppointments="upcomingAppointments"
+              :patients="patientsList"
+              :departmentId="doctorDepartmentId"
+            />
+          </template>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div v-for="dept in departments" :key="dept.id" class="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-                <div class="mb-4">
-                  <h4 class="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ dept.name }}</h4>
-                  <div class="h-1 w-12 bg-blue-100 rounded-full mt-2 group-hover:bg-blue-500 transition-colors"></div>
+          <!-- Patient Dashboard View -->
+          <template v-else>
+            <div class="mb-5">
+              <h3 class="h5 fw-bold text-dark mb-4">Our Departments</h3>
+
+              <div class="row g-4">
+                <div v-for="dept in departments" :key="dept.id" class="col-md-6 col-lg-4">
+                  <div class="card h-100 border-0 shadow-sm hover-lift transition-all">
+                    <div class="card-body p-4 d-flex flex-column">
+                      <div class="mb-3">
+                        <h4 class="h5 fw-bold text-dark mb-2">{{ dept.name }}</h4>
+                        <div class="progress" style="height: 4px;">
+                          <div class="progress-bar bg-primary" role="progressbar" style="width: 40px;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                      </div>
+                      
+                      <p class="text-muted small mb-4 flex-grow-1">
+                        {{ dept.overview || 'Specialized medical care and treatment provided by our expert team.' }}
+                      </p>
+                      
+                      <router-link 
+                        :to="`/doctors?department_id=${dept.id}`" 
+                        class="btn btn-light text-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2 mt-auto"
+                      >
+                        View Doctors
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </router-link>
+                    </div>
+                  </div>
                 </div>
-                
-                <p class="text-slate-500 text-sm mb-6 line-clamp-2 flex-1 leading-relaxed">
-                  {{ dept.overview || 'Specialized medical care and treatment provided by our expert team.' }}
-                </p>
-                
-                <router-link 
-                  :to="`/doctors?department_id=${dept.id}`" 
-                  class="mt-auto w-full py-2.5 px-4 rounded-xl text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-2 group/btn"
-                >
-                  View Doctors
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </router-link>
               </div>
             </div>
-
-          </div>
-
+          </template>
 
         </div>
       </div>
@@ -153,8 +168,37 @@ const fetchPatientStats = async () => {
 onMounted(() => {
   if (userRole.value === 'doctor') {
     fetchDoctorStats();
-  } else if (userRole.value === 'patient') {
+  } else {
+    // Default to patient stats/view if not doctor (e.g. patient or admin viewing dashboard route, though admin has separate dashboard)
     fetchPatientStats();
   }
 });
 </script>
+
+<style scoped>
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+}
+</style>
