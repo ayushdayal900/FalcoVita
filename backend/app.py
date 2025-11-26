@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 import os
 
 # Load .env
-load_dotenv()
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '..', '.env'))
 
 from backend.config import DevelopmentConfig
 from backend.resources import (

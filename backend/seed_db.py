@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from faker import Faker
 from flask_security.utils import hash_password
+from backend import extensions
 from backend.extensions import db
 from backend.models import (
     User, Role, UserRoles,
@@ -18,7 +19,7 @@ fake = Faker()
 
 def seed_data():
     with app.app_context():
-        datastore: SQLAlchemyUserDatastore = app.datastore
+        datastore: SQLAlchemyUserDatastore = extensions.user_datastore
 
         db.drop_all()
         db.create_all()

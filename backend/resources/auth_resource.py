@@ -27,6 +27,9 @@ def login():
     if not user or not verify_and_update_password(password, user):
         return {"message": "Invalid credentials"}, 401
 
+    if user.blacklisted or not user.active:
+        return {"message": "Account is deactivated. Please contact support."}, 403
+
     return {
         "message": "Login successful",
         "id": user.id,

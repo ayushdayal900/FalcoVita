@@ -1,0 +1,12 @@
+Login attempt: email=doctor1@hospital.com, password=Doctor@123
+User found: <User 2>
+User password hash: $argon2id$v=19$m=65536,t=3,p=4$Nca41xqjNGbsPacUIkTo3Q$ZpYiwaA79HlBEMw4YV2RBv2SAvIQkANtoiR7OLuxLKg
+Verify password result: False
+Verify and update result: False
+Login attempt: email=doctor1@hospital.com, password=Doctor@123
+User found: <User 2>
+User password hash: $argon2id$v=19$m=65536,t=3,p=4$Nca41xqjNGbsPacUIkTo3Q$ZpYiwaA79HlBEMw4YV2RBv2SAvIQkANtoiR7OLuxLKg
+Verify password result: False
+Verify and update result: False
+Config SECURITY_PASSWORD_HASH: argon2
+Config SECURITY_PASSWORD_SALT: thisisapasswordsalt

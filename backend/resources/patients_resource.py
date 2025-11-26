@@ -63,11 +63,15 @@ class PatientByEmailResource(Resource):
 # --------------------------------------
 class PatientListResource(Resource):
 
-    @cache.cached(timeout=60)
+    @cache.cached(timeout=60, query_string=True)
     def get(self):
-        """Get all patients"""
+        """Get all patients or filter by doctor"""
+        doctor_id = request.args.get('doctor_id')
         try:
-            patients = PatientService.get_all()
+            if doctor_id:
+                patients = PatientService.get_patients_for_doctor(doctor_id)
+            else:
+                patients = PatientService.get_all()
             return patients, 200
         except ServiceError as e:
             return {"message": str(e)}, 404

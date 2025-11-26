@@ -1,101 +1,150 @@
 <template>
-  <div class="dashboard-layout flex h-screen overflow-hidden">
+  <div class="dashboard-layout flex h-screen overflow-hidden bg-slate-50">
     <Sidebar />
     
-    <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-        <h2 class="text-lg font-medium">Appointments</h2>
-        <button v-if="userRole === 'patient'" @click="showBookModal = true" class="btn btn-primary text-sm">
-          Book Appointment
-        </button>
-        <button v-if="userRole === 'doctor'" @click="showAddSlotModal = true" class="btn btn-primary text-sm">
-          Add Slot
-        </button>
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+      <!-- Header -->
+      <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-8 z-10 sticky top-0">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Appointments</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Manage your schedule and bookings</p>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <button 
+            v-if="userRole === 'patient'" 
+            @click="showBookModal = true" 
+            class="btn-primary flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Book Appointment
+          </button>
+          <button 
+            v-if="userRole === 'doctor'" 
+            @click="showAddSlotModal = true" 
+            class="btn-primary flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Slot
+          </button>
+        </div>
       </header>
 
-      <div class="flex-1 overflow-auto p-6">
-        <div class="container mx-auto">
+      <div class="flex-1 overflow-auto p-8">
+        <div class="max-w-7xl mx-auto space-y-8">
           
-          <!-- Search -->
-          <SearchBar 
-            v-model="search" 
-            placeholder="Search appointments by patient or doctor name..."
-            @clear="search = ''"
-          />
-
-          <div v-if="loading" class="text-center py-10">
-            <p class="text-muted">Loading appointments...</p>
+          <!-- Search Section -->
+          <div class="bg-white rounded-2xl p-1.5 shadow-sm border border-slate-100 max-w-2xl">
+            <SearchBar 
+              v-model="search" 
+              placeholder="Search appointments by patient or doctor name..."
+              @clear="search = ''"
+            />
           </div>
 
-          <div v-else-if="combinedItems.length === 0" class="text-center py-10">
-            <p class="text-muted">No appointments or slots found.</p>
+          <!-- Loading State -->
+          <div v-if="loading" class="flex flex-col items-center justify-center py-20">
+            <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-500 font-medium">Loading appointments...</p>
           </div>
 
+          <!-- Empty State -->
+          <div v-else-if="combinedItems.length === 0" class="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">No Appointments Found</h3>
+            <p class="text-slate-500 text-center max-w-xs">
+              {{ search ? 'Try adjusting your search terms.' : 'You don\'t have any scheduled appointments yet.' }}
+            </p>
+          </div>
+
+          <!-- Grid Layout -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="(item, index) in combinedItems" :key="item.type + item.data.id" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col">
+            <div 
+              v-for="(item, index) in combinedItems" 
+              :key="item.type + item.data.id" 
+              class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col"
+            >
               
-              <!-- APPOINTMENT CARD -->
+              <!-- Appointment Card -->
               <template v-if="item.type === 'appointment'">
-                <!-- Status Bar -->
-                <div class="h-1.5 w-full" :class="{
+                <div class="h-1.5 w-full transition-colors duration-300" :class="{
                   'bg-emerald-500': item.data.status === 'completed',
                   'bg-blue-500': item.data.status === 'scheduled',
-                  'bg-red-500': item.data.status === 'canceled'
+                  'bg-rose-500': item.data.status === 'canceled'
                 }"></div>
 
                 <div class="p-6 flex-1 flex flex-col">
-                  <div class="flex justify-between items-start mb-4">
+                  <div class="flex justify-between items-start mb-6">
                     <div>
-                      <p class="text-xs font-bold uppercase tracking-wider mb-1" :class="{
-                        'text-emerald-600': item.data.status === 'completed',
-                        'text-blue-600': item.data.status === 'scheduled',
-                        'text-red-600': item.data.status === 'canceled'
+                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide mb-3" :class="{
+                        'bg-emerald-50 text-emerald-700': item.data.status === 'completed',
+                        'bg-blue-50 text-blue-700': item.data.status === 'scheduled',
+                        'bg-rose-50 text-rose-700': item.data.status === 'canceled'
                       }">
+                        <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="{
+                          'bg-emerald-500': item.data.status === 'completed',
+                          'bg-blue-500': item.data.status === 'scheduled',
+                          'bg-rose-500': item.data.status === 'canceled'
+                        }"></span>
                         {{ item.data.status }}
-                      </p>
-                      <h3 class="font-bold text-lg text-slate-800">
+                      </div>
+                      <h3 class="font-bold text-lg text-slate-800 group-hover:text-blue-600 transition-colors">
                         {{ userRole === 'doctor' ? item.data.patient?.user?.name : 'Dr. ' + (item.data.doctor?.user?.name || 'Unknown') }}
                       </h3>
-                      <p class="text-sm text-slate-500" v-if="userRole === 'patient' && item.data.doctor?.specialization">
+                      <p class="text-sm text-slate-500 font-medium mt-1" v-if="userRole === 'patient' && item.data.doctor?.specialization">
                         {{ item.data.doctor.specialization }}
                       </p>
                     </div>
-                    </div>
+                  </div>
 
-                  <div class="space-y-3 mb-6">
-                    <div class="flex items-center gap-3 text-sm text-slate-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                  <div class="space-y-4 mb-8">
+                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                      <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
                       <span class="font-medium">
                         {{ new Date(item.data.appointment_date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-3 text-sm text-slate-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                      <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
                       <span class="font-medium">
                         {{ new Date(item.data.appointment_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-3 text-sm text-slate-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                      <span>{{ item.data.department?.name || 'General' }}</span>
+                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                      <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <span class="font-medium">{{ item.data.department?.name || 'General' }}</span>
                     </div>
                   </div>
 
-                  <div class="mt-auto pt-4 border-t border-slate-100 flex gap-2">
+                  <div class="mt-auto pt-6 border-t border-slate-100 flex gap-3">
                     <template v-if="item.data.status === 'scheduled'">
-                      <button @click="cancelAppointment(item.data.id)" class="flex-1 py-2 px-3 rounded-lg text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
+                      <button @click="cancelAppointment(item.data.id)" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">
                         Cancel
                       </button>
-                      <button @click="rescheduleAppointment(item.data)" class="flex-1 py-2 px-3 rounded-lg text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
+                      <button @click="rescheduleAppointment(item.data)" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors">
                         Reschedule
                       </button>
-                      <button v-if="userRole === 'doctor'" @click="completeAppointment(item.data.id)" class="flex-1 py-2 px-3 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                      <button v-if="userRole === 'doctor'" @click="completeAppointment(item.data.id)" class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all">
                         Complete
                       </button>
                     </template>
@@ -106,30 +155,37 @@
                 </div>
               </template>
 
-              <!-- SLOT CARD -->
+              <!-- Slot Card -->
               <template v-else>
-                <div class="h-1.5 w-full bg-slate-300"></div>
+                <div class="h-1.5 w-full bg-slate-200"></div>
                 <div class="p-6 flex-1 flex flex-col">
-                  <div class="flex justify-between items-start mb-4">
+                  <div class="flex justify-between items-start mb-6">
                     <div>
-                      <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Available Slot</p>
+                      <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-3">
+                        Available Slot
+                      </div>
                       <h3 class="font-bold text-lg text-slate-800">
                         {{ new Date(item.data.available_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) }}
                       </h3>
                     </div>
-                    </div>
+                  </div>
 
-                  <div class="space-y-3 mb-6">
-                    <div class="flex items-center gap-3 text-sm text-slate-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span class="font-medium text-lg text-blue-600">{{ item.data.time_slot }}</span>
+                  <div class="space-y-4 mb-8">
+                    <div class="flex items-center gap-3.5 text-sm text-slate-600">
+                      <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <span class="font-bold text-lg text-blue-600">{{ item.data.time_slot }}</span>
                     </div>
                   </div>
 
-                  <div class="mt-auto pt-4 border-t border-slate-100">
-                    <button @click="deleteSlot(item.data.id)" class="w-full py-2 px-3 rounded-lg text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
+                  <div class="mt-auto pt-6 border-t border-slate-100">
+                    <button @click="deleteSlot(item.data.id)" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
                       Delete Slot
                     </button>
                   </div>
@@ -143,83 +199,159 @@
       </div>
     </main>
 
-    <!-- Simple Booking Modal -->
-    <div v-if="showBookModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all">
-        <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 class="text-lg font-bold text-slate-800">Book Appointment</h3>
-          <button @click="showBookModal = false" class="text-slate-400 hover:text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <!-- Book Appointment Modal -->
+    <Transition name="modal">
+      <div v-if="showBookModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="showBookModal = false"></div>
         
-        <div class="p-6">
-          <form @submit.prevent="bookAppointment" class="space-y-5">
-            <div class="form-group">
-              <label class="block text-sm font-medium text-slate-700 mb-1">Select Doctor</label>
-              <div class="relative">
-                <select v-model="newAppt.doctor_id" @change="handleDoctorChange" class="block w-full pl-3 pr-10 py-2.5 text-base border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl bg-slate-50 transition-all" required>
-                  <option value="" disabled>Choose a specialist</option>
-                  <option v-for="doc in doctors" :key="doc.id" :value="doc.id">
-                    Dr. {{ doc.user?.name }} ({{ doc.specialization }})
-                  </option>
-                </select>
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-[550px] overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+          
+          <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 flex justify-between items-start">
+            <div>
+              <h3 class="text-xl font-bold text-white">Book Appointment</h3>
+              <p class="text-blue-100 text-sm mt-1">Schedule a visit with our specialists</p>
+            </div>
+            <button @click="showBookModal = false" class="text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-2 backdrop-blur-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="p-8 overflow-y-auto">
+            <form @submit.prevent="bookAppointment" class="space-y-6">
+              
+              <div class="form-group">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Select Specialist</label>
+                <div class="relative group">
+                  <select 
+                    v-model="newAppt.doctor_id" 
+                    @change="handleDoctorChange" 
+                    class="block w-full pl-4 pr-10 py-3.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer" 
+                    required
+                  >
+                    <option value="" disabled>Choose a doctor...</option>
+                    <option v-for="doc in doctors" :key="doc.id" :value="doc.id">
+                      Dr. {{ doc.user?.name }} — {{ doc.specialization }}
+                    </option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 group-hover:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div class="form-group">
-              <label class="block text-sm font-medium text-slate-700 mb-1">Available Slots</label>
-              <div class="relative">
-                <select v-model="newAppt.slot_id" class="block w-full pl-3 pr-10 py-2.5 text-base border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl bg-slate-50 transition-all" required :disabled="!newAppt.doctor_id">
-                  <option value="" disabled>Select a time slot</option>
-                  <option v-for="slot in availableSlots" :key="slot.id" :value="slot.id">
-                    {{ new Date(slot.available_date).toLocaleDateString() }} - {{ slot.time_slot }}
-                  </option>
-                </select>
+              
+              <div class="form-group">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Available Time Slots</label>
+                <div class="relative group">
+                  <select 
+                    v-model="newAppt.slot_id" 
+                    class="block w-full pl-4 pr-10 py-3.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100" 
+                    required 
+                    :disabled="!newAppt.doctor_id"
+                  >
+                    <option value="" disabled>Select a time slot...</option>
+                    <option v-for="slot in availableSlots" :key="slot.id" :value="slot.id">
+                      {{ new Date(slot.available_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) }} — {{ slot.time_slot }}
+                    </option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 group-hover:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                
+                <div v-if="newAppt.doctor_id" class="mt-2 min-h-[20px]">
+                  <p v-if="availableSlots.length === 0" class="text-xs font-medium text-rose-500 flex items-center gap-1.5 animate-pulse">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    No slots available for this doctor.
+                  </p>
+                  <p v-else class="text-xs font-medium text-emerald-600 flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {{ availableSlots.length }} slots available
+                  </p>
+                </div>
               </div>
-              <p v-if="newAppt.doctor_id && availableSlots.length === 0" class="text-xs text-orange-500 mt-2 flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                No available slots for this doctor.
-              </p>
-            </div>
-            
-            <div class="flex justify-end gap-3 pt-4">
-              <button type="button" @click="showBookModal = false" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">Cancel</button>
-              <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 transition-all">Book Appointment</button>
-            </div>
-          </form>
+              
+              <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+                <button type="button" @click="showBookModal = false" class="px-6 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-slate-200">
+                  Cancel
+                </button>
+                <button type="submit" class="px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Confirm Booking
+                </button>
+              </div>
+
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Add Slot Modal -->
-    <div v-if="showAddSlotModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="card bg-white w-full max-w-md p-6">
-        <h3 class="text-lg font-bold mb-4">Add Availability Slot</h3>
-        <form @submit.prevent="addSlot">
-          <div class="form-group mb-4">
-            <label class="label">Date</label>
-            <input type="date" v-model="newSlot.date" class="input" required :min="new Date().toISOString().split('T')[0]">
-          </div>
-          <div class="form-group mb-4">
-            <label class="label">Time Slot</label>
-            <div class="flex gap-2 items-center">
-              <input type="time" v-model="newSlot.startTime" class="input" required>
-              <span>to</span>
-              <input type="time" v-model="newSlot.endTime" class="input" required>
+    <Transition name="modal">
+      <div v-if="showAddSlotModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="showAddSlotModal = false"></div>
+        
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+          <div class="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 flex justify-between items-start">
+            <div>
+              <h3 class="text-xl font-bold text-white">Add Availability</h3>
+              <p class="text-blue-100 text-sm mt-1">Set your available hours</p>
             </div>
+            <button @click="showAddSlotModal = false" class="text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-2 backdrop-blur-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <div class="flex justify-end gap-2">
-            <button type="button" @click="showAddSlotModal = false" class="btn btn-outline">Cancel</button>
-            <button type="submit" class="btn btn-primary">Add Slot</button>
+
+          <div class="p-8">
+            <form @submit.prevent="addSlot" class="space-y-5">
+              <div class="form-group">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Date</label>
+                <input 
+                  type="date" 
+                  v-model="newSlot.date" 
+                  class="block w-full px-4 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
+                  required 
+                  :min="new Date().toISOString().split('T')[0]"
+                >
+              </div>
+              <div class="form-group">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Time Slot</label>
+                <div class="flex gap-3 items-center">
+                  <input 
+                    type="time" 
+                    v-model="newSlot.startTime" 
+                    class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
+                    required
+                  >
+                  <span class="text-slate-400 font-medium">to</span>
+                  <input 
+                    type="time" 
+                    v-model="newSlot.endTime" 
+                    class="flex-1 px-4 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-50 hover:bg-white transition-all" 
+                    required
+                  >
+                </div>
+              </div>
+              <div class="flex justify-end gap-3 pt-4">
+                <button type="button" @click="showAddSlotModal = false" class="px-6 py-2.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-800 transition-all">Cancel</button>
+                <button type="submit" class="px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30 transform active:scale-95 transition-all">Add Slot</button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </Transition>
 
   </div>
 </template>
@@ -320,11 +452,6 @@ const fetchDoctors = async () => {
   }
 };
 
-const getInitials = (appt) => {
-  const name = userRole.value === 'doctor' ? appt.patient?.user?.name : appt.doctor?.user?.name;
-  return name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '?';
-};
-
 const bookAppointment = async () => {
   try {
     console.log('Booking appointment...');
@@ -337,9 +464,6 @@ const bookAppointment = async () => {
       return;
     }
 
-    // Combine date and time from slot (assuming slot.available_date is a date string and time_slot is "HH:MM-HH:MM")
-    // For simplicity, let's assume available_date is the date and we take the start time from time_slot
-    // Format: "09:00-10:00" -> "09:00"
     const startTime = selectedSlot.time_slot.split('-')[0];
     const appointmentDate = new Date(selectedSlot.available_date);
     const [hours, minutes] = startTime.split(':');
@@ -442,7 +566,6 @@ const combinedItems = computed(() => {
   let items = [];
 
   // 1. Add Appointments
-  // We use displayedAppointments which already handles search & role filtering
   items = displayedAppointments.value.map(appt => ({
     type: 'appointment',
     date: new Date(appt.appointment_date),
@@ -451,18 +574,10 @@ const combinedItems = computed(() => {
 
   // 2. Add Available Slots (Only for Doctors)
   if (userRole.value === 'doctor') {
-    // Filter slots based on search term if needed, or just show all available
-    // If search is active, maybe we only show slots if they match something? 
-    // But slots don't have patient names. Let's just show them if search is empty 
-    // OR if we want to be fancy, maybe filter by date? 
-    // For now, let's include them if they are available.
-    
     const relevantSlots = slots.value.filter(s => s.status === 'available');
     
     relevantSlots.forEach(slot => {
-      // Create a date object for sorting. 
-      // Assuming available_date is "YYYY-MM-DD" and time_slot is "HH:MM-..."
-      const dateStr = slot.available_date.split('T')[0]; // ensure we get YYYY-MM-DD
+      const dateStr = slot.available_date.split('T')[0];
       const timeStart = slot.time_slot.split('-')[0];
       const dateTime = new Date(`${dateStr}T${timeStart}`);
       
@@ -488,9 +603,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.bg-black\/50 { background-color: rgba(0, 0, 0, 0.5); }
-.text-red-500 { color: #ef4444; }
-.border-red-200 { border-color: #fecaca; }
-.hover\:bg-red-50:hover { background-color: #fef2f2; }
-.hover\:border-red-500:hover { border-color: #ef4444; }
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm shadow-blue-500/30;
+}
+
+/* Modal Transitions */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .transform,
+.modal-leave-active .transform {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-enter-from .transform,
+.modal-leave-to .transform {
+  opacity: 0;
+  transform: scale(0.95) translateY(20px);
+}
 </style>

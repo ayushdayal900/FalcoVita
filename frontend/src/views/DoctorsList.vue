@@ -62,7 +62,7 @@
               </div>
 
               <div class="mt-auto">
-                <button v-if="userRole === 'admin'" @click="openManageModal(doctor)" class="btn btn-outline w-full text-center border-primary text-primary hover:bg-primary hover:text-white">
+                <button v-if="userRole === 'admin'" @click="openManageModal(doctor)" class="btn btn-primary w-full text-center">
                   Manage Doctor
                 </button>
                 <router-link v-else :to="`/doctors/${doctor.id}`" class="btn btn-primary w-full text-center">

@@ -77,7 +77,7 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
-        path: '/history',
+        path: '/history/:patientId?',
         name: 'History',
         component: () => import('@/views/PatientHistory.vue'),
         meta: { requiresAuth: true },

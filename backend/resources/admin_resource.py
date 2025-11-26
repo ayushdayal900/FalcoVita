@@ -179,6 +179,7 @@ class AdminBlacklistResource(Resource):
             return {"message": "User not found"}, 404
         
         user.blacklisted = True
+        user.active = False
         db.session.commit()
         
         return {"message": f"User {user.name} blacklisted successfully"}, 200
@@ -193,6 +194,7 @@ class AdminBlacklistResource(Resource):
             return {"message": "User not found"}, 404
         
         user.blacklisted = False
+        user.active = True
         db.session.commit()
         
         return {"message": f"User {user.name} removed from blacklist"}, 200

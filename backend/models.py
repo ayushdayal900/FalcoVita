@@ -33,8 +33,8 @@ class User(BaseModel, UserMixin):
     blacklisted = db.Column(db.Boolean, default=False)
 
     # One-to-one with Doctor & Patient
-    doctor = db.relationship('Doctor', back_populates='user', uselist=False)
-    patient = db.relationship('Patient', back_populates='user', uselist=False)
+    doctor = db.relationship('Doctor', back_populates='user', uselist=False, cascade="all, delete-orphan")
+    patient = db.relationship('Patient', back_populates='user', uselist=False, cascade="all, delete-orphan")
 
     # uselist is a parameter in db.relationship() that tells SQLAlchemy whether the relationship should return a list of objects or a single object.
 
@@ -195,12 +195,21 @@ class Appointment(BaseModel):
 
     def to_dict(self):
         data = self.to_dict_base()
+        
+        # Ensure appointment_date is timezone aware (assume UTC if naive)
+        appt_date = self.appointment_date
+        if appt_date and appt_date.tzinfo is None:
+            appt_date = appt_date.replace(tzinfo=timezone.utc)
+
         data.update({
             "patient_id": self.patient_id,
             "doctor_id": self.doctor_id,
             "department_id": self.department_id,
-            "appointment_date": self.appointment_date.isoformat() if self.appointment_date else None,
+            "appointment_date": appt_date.isoformat() if appt_date else None,
             "status": self.status,
+            "patient": self.patient.to_dict() if self.patient else None,
+            "doctor": self.doctor.to_dict() if self.doctor else None,
+            "department": self.department.to_dict() if self.department else None,
         })
         return data
 

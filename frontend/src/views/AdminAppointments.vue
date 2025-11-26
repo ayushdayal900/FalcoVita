@@ -14,6 +14,14 @@
       <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
         <div class="max-w-7xl mx-auto">
           
+          <!-- Search Bar -->
+          <SearchBar 
+            v-model="search" 
+            placeholder="Search by patient or doctor name..." 
+            @clear="search = ''"
+            class="mb-6"
+          />
+
           <!-- Filter Tabs -->
           <div class="bg-white rounded-2xl p-2 shadow-sm border border-slate-100 mb-6 inline-flex">
             <button 
@@ -168,10 +176,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
+import SearchBar from '@/components/SearchBar.vue';
 import api from '@/services/api';
 
 const appointments = ref([]);
 const loading = ref(true);
+const search = ref('');
 const filterStatus = ref('all');
 const showEditModal = ref(false);
 const editingAppointment = ref(null);
@@ -195,8 +205,23 @@ const fetchAppointments = async () => {
 };
 
 const filteredAppointments = computed(() => {
-  if (filterStatus.value === 'all') return appointments.value;
-  return appointments.value.filter(appt => appt.status === filterStatus.value);
+  let result = appointments.value;
+  
+  // Filter by status
+  if (filterStatus.value !== 'all') {
+    result = result.filter(appt => appt.status === filterStatus.value);
+  }
+  
+  // Filter by search term
+  if (search.value) {
+    const term = search.value.toLowerCase();
+    result = result.filter(appt => 
+      (appt.patient?.user?.name?.toLowerCase().includes(term)) ||
+      (appt.doctor?.user?.name?.toLowerCase().includes(term))
+    );
+  }
+  
+  return result;
 });
 
 const getStatusClass = (status) => {

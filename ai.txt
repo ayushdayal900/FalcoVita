@@ -3,6 +3,25 @@ database init file
 
 
 
-i have enhance frontend fo this project.
-please correct the api calls and developed the backend and frontend completely correct.
 
+        print("Database seeded successfully!")
+        print("\n=== Login Credentials ===")
+        print("Admin: admin@iitm.ac.in / Admin@123")
+        print("Doctor: doctor1@hospital.com / Doctor@123")
+        print("Patient: patient1@example.com / Patient@123")
+		
+admin@iitm.ac.in / Admin@123
+doctor1@hospital.com / Doctor@123
+patient1@example.com / Patient@123
+
+
+
+source .venv/bin/activate
+celery -A backend.celery_config.celery_app worker --loglevel=info
+
+source .venv/bin/activate
+python -m backend.app
+
+source .venv/bin/activate
+cd frontend
+npm run dev

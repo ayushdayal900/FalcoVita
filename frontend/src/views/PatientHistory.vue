@@ -71,19 +71,23 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useStore } from 'vuex';
+import { useRoute } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
 import api from '@/services/api';
 
 const store = useStore();
+const route = useRoute();
 const history = ref([]);
 const loading = ref(true);
 const currentUser = computed(() => store.getters.currentUser);
 
 const fetchHistory = async () => {
   try {
-    if (!currentUser.value) return;
+    const patientId = route.params.patientId || (currentUser.value ? currentUser.value.id : null);
+    if (!patientId) return;
+
     // Fetch history for the specific patient
-    const response = await api.get(`/history/patient/${currentUser.value.id}`);
+    const response = await api.get(`/history/patient/${patientId}`);
     history.value = response.data;
   } catch (err) {
     console.error('Failed to fetch history', err);
@@ -94,10 +98,11 @@ const fetchHistory = async () => {
 
 const exportHistory = async () => {
   try {
-    if (!currentUser.value) return;
+    const patientId = route.params.patientId || (currentUser.value ? currentUser.value.id : null);
+    if (!patientId) return;
     
     // Make GET request with blob response type
-    const response = await api.get(`/history/export/${currentUser.value.id}`, {
+    const response = await api.get(`/history/export/${patientId}`, {
       responseType: 'blob'
     });
     
@@ -106,7 +111,7 @@ const exportHistory = async () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `patient_${currentUser.value.id}_history.csv`;
+    link.download = `patient_${patientId}_history.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

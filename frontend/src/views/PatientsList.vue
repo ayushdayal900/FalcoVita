@@ -14,6 +14,7 @@
             v-model="search" 
             placeholder="Search patients by name or medical record number..."
             @clear="search = ''"
+            class="mb-6"
           />
 
           <div v-if="loading" class="text-center py-10">
@@ -48,7 +49,7 @@
                 </p>
               </div>
 
-              <button class="btn btn-primary w-full mt-auto text-center">
+              <button @click="$router.push(`/history/${patient.id}`)" class="btn btn-primary w-full mt-auto text-center">
                 View History
               </button>
             </div>
@@ -62,6 +63,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import Sidebar from '@/components/Sidebar.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import api from '@/services/api';
@@ -70,10 +72,17 @@ const patients = ref([]);
 const loading = ref(true);
 const search = ref('');
 
+const store = useStore();
+const userRole = computed(() => store.getters.userRole);
+const currentUser = computed(() => store.getters.currentUser);
+
 const fetchPatients = async () => {
   try {
-    // Ideally fetch only my patients, but for now fetch all
-    const response = await api.get('/patients/');
+    let url = '/patients/';
+    if (userRole.value === 'doctor' && currentUser.value) {
+      url += `?doctor_id=${currentUser.value.id}`;
+    }
+    const response = await api.get(url);
     patients.value = response.data;
   } catch (err) {
     console.error('Failed to fetch patients', err);

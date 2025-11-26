@@ -22,6 +22,18 @@ class PatientService:
         return [patient.to_dict() for patient in patients]
 
     @staticmethod
+    def get_patients_for_doctor(doctor_id):
+        from backend.models import Appointment
+        from sqlalchemy.orm import joinedload
+        
+        # Query patients who have at least one appointment with the doctor
+        patients = Patient.query.join(Appointment).filter(
+            Appointment.doctor_id == doctor_id
+        ).options(joinedload(Patient.user)).distinct().all()
+        
+        return [patient.to_dict() for patient in patients]
+
+    @staticmethod
     def create(data):
         # Check duplicate email
         if User.query.filter_by(email=data['email']).first():

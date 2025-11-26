@@ -1,4 +1,5 @@
 from backend.models import User, Doctor
+import uuid
 from backend.services.service_errors import ServiceError
 from backend.extensions import db
 
@@ -37,7 +38,8 @@ class DoctorService:
             email=data['email'],
             password=data['password'],  # In real application, hash the password
             role='doctor',
-            contact_number=data.get('contact_number')
+            contact_number=data.get('contact_number'),
+            fs_uniquifier=str(uuid.uuid4())
         )
         db.session.add(new_user)
         db.session.commit()
