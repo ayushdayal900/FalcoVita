@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
 from backend.services import PatientHistoryService, ServiceError
+from backend.jwt_utils import token_required, role_required
 
 history_bp = Blueprint("history_bp", __name__, url_prefix="/api/history")
 history_api = Api(history_bp)
@@ -11,6 +12,12 @@ history_api = Api(history_bp)
 # DELETE /api/history/<id>
 # ------------------------------------
 class PatientHistoryResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'put': [role_required('admin', 'doctor'), token_required],
+        'delete': [role_required('admin', 'doctor'), token_required]
+    }
+    
     def get(self, id):
         history = PatientHistoryService.get_by_id(id)
         if not history:
@@ -39,6 +46,11 @@ class PatientHistoryResource(Resource):
 # POST /api/history/
 # ------------------------------------
 class PatientHistoryListResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'post': [role_required('admin', 'doctor'), token_required]
+    }
+    
     def get(self):
         try:
             return PatientHistoryService.get_all(), 200
@@ -58,6 +70,8 @@ class PatientHistoryListResource(Resource):
 # GET /api/history/patient/<patient_id>
 # ------------------------------------
 class PatientHistoryByPatientResource(Resource):
+    method_decorators = [token_required]
+    
     def get(self, patient_id):
         try:
             return PatientHistoryService.get_by_patient(patient_id), 200
@@ -66,6 +80,8 @@ class PatientHistoryByPatientResource(Resource):
 
 
 class PatientHistoryExportResource(Resource):
+    method_decorators = [token_required]
+    
     def get(self, patient_id):
         from backend.models import PatientHistory, Prescription, Appointment, Patient
         from flask import make_response

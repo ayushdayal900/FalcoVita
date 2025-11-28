@@ -12,7 +12,6 @@ from backend.resources import (
     appointment_bp, availability_bp, history_bp, prescription_bp, admin_bp, department_bp, export_bp
 )
 
-
 from celery import Celery
 
 celery = Celery(
@@ -21,8 +20,6 @@ celery = Celery(
     backend="redis://localhost:6379/0"
 )
 
-
-# from backend.export_resource import export_bp
 from flask_cors import CORS
 
 def create_app():
@@ -31,9 +28,6 @@ def create_app():
     CORS(app, resources={r"/*": {"origins": "*"}})
     
     app.config.from_object(DevelopmentConfig)
-    app.config["WTF_CSRF_ENABLED"] = False
-    app.config["SECURITY_CSRF_PROTECT_MECHANISMS"] = []
-    app.config["SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS"] = True
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'db.db')}"
 
     # Register blueprints
@@ -53,16 +47,10 @@ def create_app():
     api.init_app(app)
 
     # Database & Extensions
-    from backend.models import User, Role
     from backend import extensions
-    from flask_security import SQLAlchemyUserDatastore
 
     extensions.db.init_app(app)
     extensions.cache.init_app(app)
-
-    # Setup Flask-Security
-    extensions.user_datastore = SQLAlchemyUserDatastore(extensions.db, User, Role)
-    extensions.security.init_app(app, extensions.user_datastore)
 
     return app
 

@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from flask_restful import Resource, Api
 from backend.services.prescription_services import PrescriptionService
 from backend.services.service_errors import ServiceError
+from backend.jwt_utils import token_required, role_required
 
 prescription_bp = Blueprint("prescription_bp", __name__, url_prefix="/api/prescriptions")
 prescription_api = Api(prescription_bp)
@@ -11,6 +12,11 @@ prescription_api = Api(prescription_bp)
 #   GET, PUT, DELETE prescription by ID
 # ----------------------------------------------------------
 class PrescriptionResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'put': [role_required('admin', 'doctor'), token_required],
+        'delete': [role_required('admin', 'doctor'), token_required]
+    }
 
     def get(self, id):
         prescription = PrescriptionService.get_by_id(id)
@@ -39,6 +45,10 @@ class PrescriptionResource(Resource):
 #   LIST + CREATE prescriptions
 # ----------------------------------------------------------
 class PrescriptionListResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'post': [role_required('admin', 'doctor'), token_required]
+    }
 
     def get(self):
         history_id = request.args.get("history_id")  # optional filter

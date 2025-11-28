@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify, current_app
-from flask_security.utils import verify_and_update_password, hash_password
+from flask import Blueprint, request, jsonify
 from backend.models import User, Doctor, Patient
 from backend.extensions import db
+from backend.jwt_utils import generate_token
+from backend.password_utils import hash_password, verify_password
 from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -20,15 +21,17 @@ def login():
     if not email or not password:
         return {"message": "Email and password are required"}, 400
 
-    # Access user_datastore from extensions at request time
-    from backend import extensions
-    user = extensions.user_datastore.find_user(email=email)
+    # Find user by email
+    user = User.query.filter_by(email=email).first()
 
-    if not user or not verify_and_update_password(password, user):
+    if not user or not verify_password(password, user.password):
         return {"message": "Invalid credentials"}, 401
 
     if user.blacklisted or not user.active:
         return {"message": "Account is deactivated. Please contact support."}, 403
+
+    # Generate JWT token
+    token = generate_token(user.id, user.role, user.email, user.name)
 
     return {
         "message": "Login successful",
@@ -36,7 +39,7 @@ def login():
         "email": user.email,
         "name": user.name,
         "role": user.role,
-        "token": user.get_auth_token()
+        "token": token
     }, 200
 
 
@@ -57,27 +60,25 @@ def register():
     if not name or not email or not password or not role:
         return {"message": "Name, email, role and password are required"}, 400
 
-    # Access user_datastore from extensions at request time
-    from backend import extensions
-    
+    # Validate role
+    if role not in ['admin', 'doctor', 'patient']:
+        return {"message": "Invalid role. Must be admin, doctor, or patient"}, 400
+
     # Prevent duplicate email
-    if extensions.user_datastore.find_user(email=email):
+    if User.query.filter_by(email=email).first():
         return {"message": "User with this email already exists"}, 409
 
-    # Create USER
-    user = extensions.user_datastore.create_user(
+    # Create USER with hashed password
+    user = User(
         name=name,
         email=email,
         password=hash_password(password),
         contact_number=contact_number,
         role=role,
-        active=True
+        active=True,
+        blacklisted=False
     )
-    db.session.commit()
-
-    # Assign ROLE via flask-security
-    role_obj = extensions.user_datastore.find_role(role)
-    extensions.user_datastore.add_role_to_user(user, role_obj)
+    db.session.add(user)
     db.session.commit()
 
     # ---------------------------------------------------

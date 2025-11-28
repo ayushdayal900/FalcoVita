@@ -3,35 +3,22 @@ import random
 from datetime import datetime, timedelta, timezone
 
 from faker import Faker
-from flask_security.utils import hash_password
-from backend import extensions
+from backend.password_utils import hash_password
 from backend.extensions import db
 from backend.models import (
-    User, Role, UserRoles,
+    User,
     Doctor, Patient, Department,
     Appointment, PatientHistory, Prescription, AvailabilitySlot
 )
 from backend.app import app  
-from flask_security.datastore import SQLAlchemyUserDatastore
 
 
 fake = Faker()
 
 def seed_data():
     with app.app_context():
-        datastore: SQLAlchemyUserDatastore = extensions.user_datastore
-
         db.drop_all()
         db.create_all()
-
-        print("Creating roles...")
-        # Create roles
-        admin_role = Role(name="admin", description="Administrator")
-        doctor_role = Role(name="doctor", description="Medical Doctor")
-        patient_role = Role(name="patient", description="Registered Patient")
-
-        db.session.add_all([admin_role, doctor_role, patient_role])
-        db.session.commit()
 
         print("Creating admin user...")
         # Create Admin user
@@ -40,13 +27,10 @@ def seed_data():
             email="admin@iitm.ac.in",
             password=hash_password("Admin@123"),
             role="admin",
-            fs_uniquifier=str(uuid.uuid4())
+            active=True,
+            blacklisted=False
         )
         db.session.add(admin_user)
-        db.session.commit()
-
-        admin_user_role = UserRoles(user_id=admin_user.id, role_id=admin_role.id)
-        db.session.add(admin_user_role)
         db.session.commit()
 
         print("Creating departments...")
@@ -66,8 +50,9 @@ def seed_data():
                 email=f"doctor{i+1}@hospital.com",
                 password=hash_password("Doctor@123"),
                 role="doctor",
-                fs_uniquifier=str(uuid.uuid4()),
                 contact_number=fake.phone_number()[:15],
+                active=True,
+                blacklisted=False
             )
             db.session.add(user)
             db.session.flush()
@@ -80,7 +65,6 @@ def seed_data():
                 experience=random.randint(2, 20),
             )
             doctors.append(doctor)
-            db.session.add(UserRoles(user_id=user.id, role_id=doctor_role.id))
 
         db.session.add_all(doctors)
         db.session.commit()
@@ -93,8 +77,9 @@ def seed_data():
                 email=f"patient{i+1}@example.com",
                 password=hash_password("Patient@123"),
                 role="patient",
-                fs_uniquifier=str(uuid.uuid4()),
                 contact_number=fake.phone_number()[:15],
+                active=True,
+                blacklisted=False
             )
             db.session.add(user)
             db.session.flush()
@@ -107,7 +92,6 @@ def seed_data():
                 doctor_id=random.choice(doctors).id
             )
             patients.append(patient)
-            db.session.add(UserRoles(user_id=user.id, role_id=patient_role.id))
 
         db.session.add_all(patients)
         db.session.commit()

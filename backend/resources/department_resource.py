@@ -2,12 +2,18 @@ from flask import Blueprint, request
 from flask_restful import Resource, Api
 from backend.models import Department, Doctor
 from backend.extensions import db, cache
+from backend.jwt_utils import token_required, role_required
 
 department_bp = Blueprint("department_bp", __name__, url_prefix="/api/departments")
 department_api = Api(department_bp)
 
 
 class DepartmentListResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'post': [role_required('admin'), token_required]
+    }
+    
     @cache.cached(timeout=600)
     def get(self):
         """Get all departments with doctor count"""
@@ -48,6 +54,12 @@ class DepartmentListResource(Resource):
 
 
 class DepartmentResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'put': [role_required('admin'), token_required],
+        'delete': [role_required('admin'), token_required]
+    }
+    
     def get(self, id):
         """Get single department with doctors"""
         dept = Department.query.filter_by(id=id).first()

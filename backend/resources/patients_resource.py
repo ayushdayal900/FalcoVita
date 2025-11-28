@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from flask_restful import Resource, Api
 from backend.services import PatientService, ServiceError
 from backend.extensions import cache
+from backend.jwt_utils import token_required, role_required
 
 patient_bp = Blueprint("patient_bp", __name__, url_prefix="/api/patients")
 patient_api = Api(patient_bp)
@@ -14,6 +15,13 @@ patient_api = Api(patient_bp)
 #    GET / PUT / PATCH / DELETE
 # --------------------------------------
 class PatientResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'put': [role_required('admin', 'doctor', 'patient'), token_required],
+        'patch': [role_required('admin', 'doctor', 'patient'), token_required],
+        'delete': [role_required('admin'), token_required]
+    }
+    
     def get(self, id):
         patient = PatientService.get_by_id(id)
         if not patient:
@@ -57,6 +65,8 @@ class PatientResource(Resource):
 #   GET patient by email
 # --------------------------------------
 class PatientByEmailResource(Resource):
+    method_decorators = [token_required]
+    
     def get(self, email):
         user = PatientService.get_by_email(email)
         if not user or not user.patient:
@@ -68,6 +78,10 @@ class PatientByEmailResource(Resource):
 #     LIST + CREATE
 # --------------------------------------
 class PatientListResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'post': [role_required('admin'), token_required]
+    }
 
     @cache.cached(timeout=60, query_string=True)
     def get(self):

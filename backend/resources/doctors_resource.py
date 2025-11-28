@@ -2,12 +2,20 @@ from flask import Blueprint, request
 from flask_restful import Resource, Api
 from backend.services import DoctorService, ServiceError
 from backend.extensions import cache
+from backend.jwt_utils import token_required, role_required
 
 doctor_bp = Blueprint("doctor_bp", __name__, url_prefix="/api/doctors")
 doctor_api = Api(doctor_bp)
 
 
 class DoctorResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'put': [role_required('admin', 'doctor'), token_required],
+        'patch': [role_required('admin', 'doctor'), token_required],
+        'delete': [role_required('admin'), token_required]
+    }
+    
     @cache.cached(timeout=300)
     def get(self, id):
         doctor = DoctorService.get_by_id(id)
@@ -55,6 +63,8 @@ class DoctorResource(Resource):
 # GET doctor by email
 # ---------------------------
 class DoctorByEmailResource(Resource):
+    method_decorators = [token_required]
+    
     def get(self, email):
         user = DoctorService.get_by_email(email)  # returns User
         if not user or not user.doctor:
@@ -71,6 +81,10 @@ class DoctorByEmailResource(Resource):
 # LIST + CREATE
 # ---------------------------
 class DoctorListResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'post': [role_required('admin'), token_required]
+    }
 
     @cache.cached(timeout=300, query_string=True)
     def get(self):

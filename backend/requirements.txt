@@ -2,11 +2,9 @@ Flask
 python-dotenv
 Flask-Cors
 Flask-SQLAlchemy
-Flask-Security-Too
 Flask-RESTful
-email-validator
+PyJWT
 bcrypt
-argon2-cffi
 celery
 redis
 flask-caching

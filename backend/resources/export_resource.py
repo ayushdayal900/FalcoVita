@@ -1,6 +1,7 @@
 from flask import Blueprint, request, send_file
 from flask_restful import Resource, Api
 from backend.models import PatientHistory, Prescription, Patient, Doctor, Appointment
+from backend.jwt_utils import token_required, role_required
 import csv
 import io
 from datetime import datetime
@@ -10,6 +11,8 @@ export_api = Api(export_bp)
 
 
 class ExportPatientHistoryResource(Resource):
+    method_decorators = [token_required]
+    
     def get(self, patient_id):
         """Export patient history as CSV"""
         
@@ -78,6 +81,8 @@ class ExportPatientHistoryResource(Resource):
 
 
 class ExportAllAppointmentsResource(Resource):
+    method_decorators = [role_required('admin', 'doctor'), token_required]
+    
     def get(self):
         """Export all appointments as CSV (Admin only)"""
         

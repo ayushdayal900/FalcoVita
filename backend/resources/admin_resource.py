@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
 from backend.services.admin_services import AdminService
 from backend.services.service_errors import ServiceError
+from backend.jwt_utils import token_required, role_required
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/api/admin")
 admin_api = Api(admin_bp)
@@ -11,6 +12,8 @@ admin_api = Api(admin_bp)
 # GET /api/admin/dashboard
 # ------------------------------------
 class AdminDashboardResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def get(self):
         """Get dashboard statistics"""
         try:
@@ -35,6 +38,8 @@ class AdminDashboardResource(Resource):
 # GET/POST /api/admin/doctors
 # ------------------------------------
 class AdminDoctorsResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def get(self):
         """List all doctors"""
         try:
@@ -56,6 +61,8 @@ class AdminDoctorsResource(Resource):
 # GET/PUT/DELETE /api/admin/doctors/<id>
 # ------------------------------------
 class AdminDoctorResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def get(self, id):
         from backend.models import Doctor
         doctor = Doctor.query.filter_by(id=id).first()
@@ -86,6 +93,8 @@ class AdminDoctorResource(Resource):
 # GET/POST /api/admin/patients
 # ------------------------------------
 class AdminPatientsResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def get(self):
         """List all patients"""
         try:
@@ -107,6 +116,8 @@ class AdminPatientsResource(Resource):
 # GET/PUT/DELETE /api/admin/patients/<id>
 # ------------------------------------
 class AdminPatientResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def get(self, id):
         from backend.models import Patient
         patient = Patient.query.filter_by(id=id).first()
@@ -135,6 +146,8 @@ class AdminPatientResource(Resource):
 # GET /api/admin/search
 # ------------------------------------
 class AdminSearchResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def get(self):
         """Search doctors and patients"""
         query = request.args.get('q', '')
@@ -171,6 +184,8 @@ class AdminSearchResource(Resource):
 # POST /api/admin/blacklist/<user_id>
 # ------------------------------------
 class AdminBlacklistResource(Resource):
+    method_decorators = [role_required('admin'), token_required]
+    
     def post(self, user_id):
         """Blacklist a user"""
         from backend.models import User

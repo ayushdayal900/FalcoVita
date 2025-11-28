@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
 from backend.services import AvailabilitySlotService, ServiceError
 from backend.extensions import cache
+from backend.jwt_utils import token_required, role_required
 
 availability_bp = Blueprint("availability_bp", __name__, url_prefix="/api/availability")
 availability_api = Api(availability_bp)
@@ -13,6 +14,12 @@ availability_api = Api(availability_bp)
 # DELETE /api/availability/<id>
 # ------------------------------------
 class AvailabilitySlotResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'put': [role_required('admin', 'doctor'), token_required],
+        'delete': [role_required('admin', 'doctor'), token_required]
+    }
+    
     def get(self, id):
         slot = AvailabilitySlotService.get_by_id(id)
         if not slot:
@@ -43,6 +50,11 @@ class AvailabilitySlotResource(Resource):
 # POST /api/availability/
 # ------------------------------------
 class AvailabilitySlotListResource(Resource):
+    method_decorators = {
+        'get': [token_required],
+        'post': [role_required('admin', 'doctor'), token_required]
+    }
+    
     @cache.cached(timeout=60, query_string=True)
     def get(self):
         try:
@@ -64,6 +76,8 @@ class AvailabilitySlotListResource(Resource):
 # GET /api/availability/doctor/<doctor_id>
 # ------------------------------------
 class AvailabilityByDoctorResource(Resource):
+    method_decorators = [token_required]
+    
     def get(self, doctor_id):
         try:
             return AvailabilitySlotService.get_by_doctor(doctor_id), 200

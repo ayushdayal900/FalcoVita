@@ -1,6 +1,5 @@
 from backend.extensions import db
 from datetime import datetime, timezone
-from flask_security.core import UserMixin, RoleMixin
 
 # abstract class for all models to inherit from
 class BaseModel(db.Model):
@@ -22,7 +21,7 @@ class BaseModel(db.Model):
         }
 
 
-class User(BaseModel, UserMixin):
+class User(BaseModel):
     __tablename__ = 'user'
 
     name = db.Column(db.String(100), nullable=False)
@@ -31,17 +30,13 @@ class User(BaseModel, UserMixin):
     role = db.Column(db.String(255), nullable=False)
     contact_number = db.Column(db.String(15), nullable=True)
     blacklisted = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
 
     # One-to-one with Doctor & Patient
     doctor = db.relationship('Doctor', back_populates='user', uselist=False, cascade="all, delete-orphan")
     patient = db.relationship('Patient', back_populates='user', uselist=False, cascade="all, delete-orphan")
 
     # uselist is a parameter in db.relationship() that tells SQLAlchemy whether the relationship should return a list of objects or a single object.
-
-    # for flask-security-too
-    fs_uniquifier = db.Column(db.String, unique = True, nullable =False)
-    active = db.Column(db.Boolean, default = True) # False, then the user will not be able to login
-    roles = db.Relationship('Role', backref = 'bearers', secondary='user_roles') 
 
     def to_dict(self):
         data = self.to_dict_base()
@@ -59,26 +54,6 @@ class User(BaseModel, UserMixin):
             data["patient"] = self.patient.to_dict_basic()
         return data
 
-
-# patient, doctor, admin etc
-class Role(BaseModel, RoleMixin):
-    name = db.Column(db.String, unique = True, nullable = False)
-    description = db.Column(db.String, nullable = True)
-
-
-# which user has which role
-class UserRoles (BaseModel) :
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    role_id = db.Column(db. Integer, db.ForeignKey('role.id'))
-
-    
-    def to_dict(self):
-        data = self.to_dict_base()
-        data.update({
-            "user_id": self.user_id,
-            "role_id": self.role_id,
-        })
-        return data
 
 class Doctor(BaseModel):
 

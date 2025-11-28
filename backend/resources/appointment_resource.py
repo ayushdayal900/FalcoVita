@@ -3,6 +3,7 @@ from flask_restful import Resource, Api
 from backend.services.appointment_services import AppointmentService
 from backend.services.service_errors import ServiceError
 from backend.extensions import cache
+from backend.jwt_utils import token_required
 
 appointment_bp = Blueprint("appointment_bp", __name__, url_prefix="/api/appointments")
 appointment_api = Api(appointment_bp)
@@ -11,6 +12,7 @@ appointment_api = Api(appointment_bp)
 # /api/appointments/<id>
 # ------------------------------------
 class AppointmentResource(Resource):
+    method_decorators = [token_required]
 
     def get(self, id):
         appt = AppointmentService.get_by_id(id)
@@ -39,6 +41,7 @@ class AppointmentResource(Resource):
 # /api/appointments
 # ------------------------------------
 class AppointmentListResource(Resource):
+    method_decorators = [token_required]
 
     def get(self):
         try:
