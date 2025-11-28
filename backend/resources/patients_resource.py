@@ -10,6 +10,9 @@ patient_api = Api(patient_bp)
 # --------------------------------------
 #    GET / PUT / PATCH / DELETE
 # --------------------------------------
+# --------------------------------------
+#    GET / PUT / PATCH / DELETE
+# --------------------------------------
 class PatientResource(Resource):
     def get(self, id):
         patient = PatientService.get_by_id(id)
@@ -24,6 +27,7 @@ class PatientResource(Resource):
 
         try:
             updated_patient = PatientService.update(data)
+            cache.delete_memoized(PatientListResource.get)
             return updated_patient.to_dict(), 200
         except ServiceError as e:
             return {"message": str(e)}, 400
@@ -35,6 +39,7 @@ class PatientResource(Resource):
 
         try:
             updated_patient = PatientService.update(data)
+            cache.delete_memoized(PatientListResource.get)
             return updated_patient.to_dict(), 200
         except ServiceError as e:
             return {"message": str(e)}, 400
@@ -42,6 +47,7 @@ class PatientResource(Resource):
     def delete(self, id):
         try:
             PatientService.delete_by_id(id)
+            cache.delete_memoized(PatientListResource.get)
             return {"message": "Patient deleted successfully"}, 200
         except ServiceError as e:
             return {"message": str(e)}, 404
@@ -81,6 +87,7 @@ class PatientListResource(Resource):
         data = request.get_json()
         try:
             patient = PatientService.create(data)
+            cache.delete_memoized(PatientListResource.get)
             return patient.to_dict(), 201
         except ServiceError as e:
             return {"message": str(e)}, 400

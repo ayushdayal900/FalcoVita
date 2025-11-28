@@ -1,0 +1,25 @@
+admin@iitm.ac.in / Admin@123
+doctor1@hospital.com / Doctor@123
+patient1@example.com / Patient@123
+
+
+
+selery worker starting
+ 
+ 
+ 
+ 
+ 
+ 
+ ✅ AI Pipe Prompt Tester & Autonomous Quiz Solver — Resume Entry
+
+Engineered a full-stack AI security testing platform using React, FastAPI, and Docker to simulate real-world prompt injection attacks, strengthening LLM system-prompt defenses and preventing sensitive data leakage with 95%+ detection accuracy.
+
+Built an autonomous web-based quiz-solving agent using Playwright, GPT-4o, and Gemini, enabling automated navigation, dynamic content scraping, and AI-driven answer selection with 90%+ accuracy and 4× faster execution than manual solving.
+
+Deployed a scalable microservice architecture with a Vercel frontend and Dockerized Render backend, implementing secure API communication, environment isolation, and production-grade CORS handling for high availability and low-latency inference.
+
+
+✅ ATS-Optimized Tech Keywords (For Recruiter Scanners)
+
+React.js, FastAPI, Python, Tailwind CSS, Docker, Playwright, Web Scraping, LLM Security, Prompt Injection, OpenAI API, Gemini API, Axios, REST APIs, Headless Browser Automation, Microservices, Vercel, Render, Git, DevOps, AI Agents, Automation, Data Extraction, Pandas

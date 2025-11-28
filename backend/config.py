@@ -19,6 +19,18 @@ class DevelopmentConfig(BaseConfig):
     CACHE_TYPE = "RedisCache"
     CACHE_REDIS_URL = "redis://localhost:6379/1"
     CACHE_DEFAULT_TIMEOUT = 300
+    
+    # MailHog SMTP Configuration (for development/testing)
+    MAIL_SERVER = os.environ.get("SMTP_SERVER", "localhost")
+    MAIL_PORT = int(os.environ.get("SMTP_PORT", "1025"))
+    MAIL_USE_TLS = os.environ.get("SMTP_USE_TLS", "False").lower() == "true"
+    MAIL_USE_SSL = os.environ.get("SMTP_USE_SSL", "False").lower() == "true"
+    MAIL_USERNAME = os.environ.get("SMTP_EMAIL", None)
+    MAIL_PASSWORD = os.environ.get("SMTP_PASSWORD", None)
+    MAIL_DEFAULT_SENDER = os.environ.get("SMTP_EMAIL", "noreply@hospital.com")
+    
+    # Google Chat Webhook (for notifications)
+    GOOGLE_CHAT_WEBHOOK_URL = os.environ.get("GOOGLE_CHAT_WEBHOOK_URL", "")
 
 class ProductionConfig(BaseConfig):
     DEBUG = False

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
 from backend.services import AvailabilitySlotService, ServiceError
+from backend.extensions import cache
 
 availability_bp = Blueprint("availability_bp", __name__, url_prefix="/api/availability")
 availability_api = Api(availability_bp)
@@ -23,6 +24,7 @@ class AvailabilitySlotResource(Resource):
         data["id"] = id
         try:
             updated = AvailabilitySlotService.update(data)
+            cache.delete_memoized(AvailabilitySlotListResource.get)
             return updated.to_dict(), 200
         except ServiceError as e:
             return {"message": str(e)}, 400
@@ -30,6 +32,7 @@ class AvailabilitySlotResource(Resource):
     def delete(self, id):
         try:
             AvailabilitySlotService.delete_by_id(id)
+            cache.delete_memoized(AvailabilitySlotListResource.get)
             return {"message": "Availability slot deleted"}, 200
         except ServiceError as e:
             return {"message": str(e)}, 404
@@ -40,6 +43,7 @@ class AvailabilitySlotResource(Resource):
 # POST /api/availability/
 # ------------------------------------
 class AvailabilitySlotListResource(Resource):
+    @cache.cached(timeout=60, query_string=True)
     def get(self):
         try:
             return AvailabilitySlotService.get_all(), 200
@@ -50,6 +54,7 @@ class AvailabilitySlotListResource(Resource):
         data = request.get_json()
         try:
             slot = AvailabilitySlotService.create(data)
+            cache.delete_memoized(AvailabilitySlotListResource.get)
             return slot.to_dict(), 201
         except ServiceError as e:
             return {"message": str(e)}, 400

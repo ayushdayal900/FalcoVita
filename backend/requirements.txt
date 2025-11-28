@@ -10,3 +10,4 @@ argon2-cffi
 celery
 redis
 flask-caching
+requests

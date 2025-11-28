@@ -6,15 +6,117 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
+import requests
+import json
+
+
+
+def send_google_chat_message(webhook_url, message_text, patient_name, doctor_name, appt_time, department):
+    """Send message to Google Chat via webhook"""
+    try:
+        # Create a rich card message for Google Chat
+        message = {
+            "cards": [
+                {
+                    "header": {
+                        "title": "🏥 Appointment Reminder",
+                        "subtitle": "FalcoVita Hospital",
+                        "imageUrl": "https://img.icons8.com/color/96/000000/hospital-2.png"
+                    },
+                    "sections": [
+                        {
+                            "widgets": [
+                                {
+                                    "keyValue": {
+                                        "topLabel": "Patient",
+                                        "content": patient_name,
+                                        "icon": "PERSON"
+                                    }
+                                },
+                                {
+                                    "keyValue": {
+                                        "topLabel": "Doctor",
+                                        "content": f"Dr. {doctor_name}",
+                                        "icon": "STAR"
+                                    }
+                                },
+                                {
+                                    "keyValue": {
+                                        "topLabel": "Time",
+                                        "content": appt_time,
+                                        "icon": "CLOCK"
+                                    }
+                                },
+                                {
+                                    "keyValue": {
+                                        "topLabel": "Department",
+                                        "content": department,
+                                        "icon": "BOOKMARK"
+                                    }
+                                },
+                                {
+                                    "textParagraph": {
+                                        "text": f"<b>{message_text}</b><br><br>Please arrive 10 minutes before your scheduled time."
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        response = requests.post(
+            webhook_url,
+            headers={'Content-Type': 'application/json; charset=UTF-8'},
+            data=json.dumps(message)
+        )
+        
+        if response.status_code == 200:
+            print(f"Google Chat message sent successfully to {patient_name}")
+            return True
+        else:
+            print(f"Failed to send Google Chat message: {response.status_code} - {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"Error sending Google Chat message: {e}")
+        return False
+
+
+@celery_app.task(name='backend.tasks.send_test_google_chat')
+def send_test_google_chat():
+    """Send a test message to Google Chat every 20 seconds"""
+    webhook_url = os.environ.get('GOOGLE_CHAT_WEBHOOK_URL', '')
+    
+    if not webhook_url:
+        return "No Google Chat webhook URL configured"
+    
+    # Generate test data
+    from datetime import datetime
+    current_time = datetime.now().strftime('%I:%M:%S %p')
+    
+    success = send_google_chat_message(
+        webhook_url=webhook_url,
+        message_text=f"🧪 TEST REMINDER - Sent at {current_time}",
+        patient_name="John Doe (Test Patient)",
+        doctor_name="Sarah Smith",
+        appt_time="10:30 AM",
+        department="Cardiology"
+    )
+    
+    if success:
+        return f"Test message sent at {current_time}"
+    else:
+        return f"Failed to send test message at {current_time}"
 
 
 def send_email(to_email, subject, html_content):
-    """Helper function to send email"""
+    """Helper function to send email via MailHog"""
     try:
         from_email = os.environ.get('SMTP_EMAIL', 'noreply@hospital.com')
-        password = os.environ.get('SMTP_PASSWORD', '')
-        smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-        smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+        smtp_server = os.environ.get('SMTP_SERVER', 'localhost')
+        smtp_port = int(os.environ.get('SMTP_PORT', '1025'))  # MailHog default port
         
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -24,12 +126,13 @@ def send_email(to_email, subject, html_content):
         html_part = MIMEText(html_content, 'html')
         msg.attach(html_part)
         
+        # Connect to MailHog (no authentication needed)
         server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(from_email, password)
+        # MailHog doesn't require TLS or authentication
         server.sendmail(from_email, to_email, msg.as_string())
         server.quit()
         
+        print(f"Email sent to {to_email} via MailHog at {smtp_server}:{smtp_port}")
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
@@ -38,10 +141,14 @@ def send_email(to_email, subject, html_content):
 
 @celery_app.task(name='backend.tasks.send_daily_reminders')
 def send_daily_reminders():
-    """Send daily reminders to patients with appointments today"""
+    """Send daily reminders to patients with appointments today via Google Chat or Email"""
     with app.app_context():
         today = datetime.now(timezone.utc).date()
         tomorrow = today + timedelta(days=1)
+        
+        # Get Google Chat webhook URL from environment
+        google_chat_webhook = os.environ.get('GOOGLE_CHAT_WEBHOOK_URL', '')
+        use_google_chat = bool(google_chat_webhook)
         
         # Get appointments for today
         appointments = Appointment.query.filter(
@@ -53,11 +160,28 @@ def send_daily_reminders():
         sent_count = 0
         for appt in appointments:
             if appt.patient and appt.patient.user:
-                patient_email = appt.patient.user.email
                 patient_name = appt.patient.user.name
+                patient_email = appt.patient.user.email
                 doctor_name = appt.doctor.user.name if appt.doctor and appt.doctor.user else 'Your Doctor'
                 appt_time = appt.appointment_date.strftime('%I:%M %p')
+                department = appt.department.name if appt.department else 'N/A'
                 
+                message_text = f"You have an appointment scheduled for TODAY at {appt_time}."
+                
+                # Try Google Chat first if webhook is configured
+                if use_google_chat:
+                    if send_google_chat_message(
+                        google_chat_webhook,
+                        message_text,
+                        patient_name,
+                        doctor_name,
+                        appt_time,
+                        department
+                    ):
+                        sent_count += 1
+                        continue  # Skip email if Google Chat succeeded
+                
+                # Fallback to email if Google Chat is not configured or failed
                 html_content = f"""
                 <html>
                 <body style="font-family: Arial, sans-serif; padding: 20px;">
@@ -67,7 +191,7 @@ def send_daily_reminders():
                     <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
                         <p><strong>Doctor:</strong> Dr. {doctor_name}</p>
                         <p><strong>Time:</strong> {appt_time}</p>
-                        <p><strong>Department:</strong> {appt.department.name if appt.department else 'N/A'}</p>
+                        <p><strong>Department:</strong> {department}</p>
                     </div>
                     <p>Please arrive 10 minutes before your scheduled time.</p>
                     <p>Best regards,<br>FalcoVita Hospital Team</p>
@@ -78,7 +202,8 @@ def send_daily_reminders():
                 if send_email(patient_email, 'Appointment Reminder - Today', html_content):
                     sent_count += 1
         
-        return f"Sent {sent_count} reminders"
+        method = "Google Chat" if use_google_chat else "Email"
+        return f"Sent {sent_count} reminders via {method}"
 
 
 @celery_app.task(name='backend.tasks.send_monthly_reports')
@@ -263,11 +388,10 @@ def export_patient_history_csv(patient_id):
             csv_content = output.getvalue()
             output.close()
             
-            # Prepare Email
+            # Prepare Email for MailHog
             from_email = os.environ.get('SMTP_EMAIL', 'noreply@hospital.com')
-            password = os.environ.get('SMTP_PASSWORD', '')
-            smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-            smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+            smtp_server = os.environ.get('SMTP_SERVER', 'localhost')
+            smtp_port = int(os.environ.get('SMTP_PORT', '1025'))  # MailHog default port
             
             msg = MIMEMultipart()
             msg['Subject'] = 'Your Treatment History Export'
@@ -292,13 +416,12 @@ def export_patient_history_csv(patient_id):
             attachment.add_header('Content-Disposition', 'attachment', filename=f'patient_{patient_id}_history.csv')
             msg.attach(attachment)
             
-            # Send Email
+            # Send Email via MailHog (no authentication needed)
             server = smtplib.SMTP(smtp_server, smtp_port)
-            server.starttls()
-            server.login(from_email, password)
             server.sendmail(from_email, email, msg.as_string())
             server.quit()
             
+            print(f"Export sent to {email} via MailHog at {smtp_server}:{smtp_port}")
             return f"Export sent to {email}"
             
         except Exception as e:

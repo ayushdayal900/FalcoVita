@@ -7,5 +7,5 @@ import { RouterView } from 'vue-router'
 </template>
 
 <style>
-/* Global styles are in main.css */
+/* globall styles */
 </style>

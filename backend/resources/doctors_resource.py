@@ -8,6 +8,7 @@ doctor_api = Api(doctor_bp)
 
 
 class DoctorResource(Resource):
+    @cache.cached(timeout=300)
     def get(self, id):
         doctor = DoctorService.get_by_id(id)
         if not doctor:
@@ -21,6 +22,8 @@ class DoctorResource(Resource):
 
         try:
             updated_doctor = DoctorService.update(data)
+            cache.delete_memoized(DoctorListResource.get)
+            cache.delete_memoized(DoctorResource.get, id=id)
             return updated_doctor.to_dict(), 200
         except ServiceError as e:
             return {"message": str(e)}, 400
@@ -32,6 +35,8 @@ class DoctorResource(Resource):
 
         try:
             updated_doctor = DoctorService.update(data)
+            cache.delete_memoized(DoctorListResource.get)
+            cache.delete_memoized(DoctorResource.get, id=id)
             return updated_doctor.to_dict(), 200
         except ServiceError as e:
             return {"message": str(e)}, 400
@@ -39,6 +44,8 @@ class DoctorResource(Resource):
     def delete(self, id):
         try:
             DoctorService.delete_by_id(id)
+            cache.delete_memoized(DoctorListResource.get)
+            cache.delete_memoized(DoctorResource.get, id=id)
             return {"message": "Doctor deleted successfully"}, 200
         except ServiceError as e:
             return {"message": str(e)}, 404
@@ -59,8 +66,13 @@ class DoctorByEmailResource(Resource):
 # ---------------------------
 # LIST + CREATE
 # ---------------------------
+
+# ---------------------------
+# LIST + CREATE
+# ---------------------------
 class DoctorListResource(Resource):
 
+    @cache.cached(timeout=300, query_string=True)
     def get(self):
         """Get all doctors"""
         try:
@@ -77,6 +89,7 @@ class DoctorListResource(Resource):
 
         try:
             doctor = DoctorService.create(data)
+            cache.delete_memoized(DoctorListResource.get)
             return doctor.to_dict(), 201
         except ServiceError as e:
             return {"message": str(e)}, 400
