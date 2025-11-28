@@ -3,7 +3,8 @@ from flask_restful import Resource, Api
 from backend.services.appointment_services import AppointmentService
 from backend.services.service_errors import ServiceError
 from backend.extensions import cache
-from backend.jwt_utils import token_required
+from backend.jwt_utils import token_required, get_current_user
+from datetime import datetime, timedelta
 
 appointment_bp = Blueprint("appointment_bp", __name__, url_prefix="/api/appointments")
 appointment_api = Api(appointment_bp)
@@ -58,6 +59,33 @@ class AppointmentListResource(Resource):
             return {"message": str(e)}, 400
 
 
+# ------------------------------------
+# /api/appointments/doctor/upcoming
+# ------------------------------------
+class DoctorUpcomingAppointmentsResource(Resource):
+    method_decorators = [token_required]
+
+    def get(self):
+        """Get upcoming appointments for the logged-in doctor"""
+        try:
+            # Get current user from JWT token
+            current_user = get_current_user()
+            if not current_user:
+                return {"message": "Authentication required"}, 401
+            
+            doctor_id = current_user.get('user_id')
+            time_range = request.args.get('range', 'week')  # 'today', 'week', or 'all'
+            
+            # Get appointments for this doctor
+            appointments = AppointmentService.get_doctor_upcoming(doctor_id, time_range)
+            return appointments, 200
+        except ServiceError as e:
+            return {"message": str(e)}, 404
+        except Exception as e:
+            return {"message": f"Error fetching appointments: {str(e)}"}, 500
+
+
 # Register routes
 appointment_api.add_resource(AppointmentListResource, "/")
 appointment_api.add_resource(AppointmentResource, "/<int:id>")
+appointment_api.add_resource(DoctorUpcomingAppointmentsResource, "/doctor/upcoming")

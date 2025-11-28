@@ -24,6 +24,7 @@
               :upcomingAppointments="upcomingAppointments"
               :patients="patientsList"
               :departmentId="doctorDepartmentId"
+              @refresh-appointments="handleRefreshAppointments"
             />
           </template>
 
@@ -90,7 +91,7 @@ const departments = ref([]);
 const patientsList = ref([]);
 const doctorDepartmentId = ref(null);
 
-const fetchDoctorStats = async () => {
+const fetchDoctorStats = async (timeRange = 'week') => {
   try {
     const doctorId = store.getters.currentUser?.id;
 
@@ -100,22 +101,20 @@ const fetchDoctorStats = async () => {
         doctorDepartmentId.value = doctorRes.data.department_id;
     }
 
-    const appointmentsRes = await api.get('/appointments/');
-    const allAppointments = appointmentsRes.data;
+    // Use new endpoint for upcoming appointments
+    const upcomingRes = await api.get(`/appointments/doctor/upcoming?range=${timeRange}`);
+    upcomingAppointments.value = upcomingRes.data;
 
-    // Filter only this doctor's appointments
-    const appointments = allAppointments.filter(a => a.doctor_id === doctorId);
-
+    // Calculate today's appointments from upcoming
     const today = new Date().toDateString();
-
-    todayAppointments.value = appointments.filter(a =>
-      new Date(a.appointment_date).toDateString() === today &&
-      a.status === 'scheduled'
+    todayAppointments.value = upcomingAppointments.value.filter(a =>
+      new Date(a.appointment_date).toDateString() === today
     ).length;
 
-    upcomingAppointments.value = appointments
-      .filter(a => a.status === 'scheduled' && new Date(a.appointment_date) > new Date())
-      .sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date));
+    // Get all appointments for week completed stat
+    const appointmentsRes = await api.get('/appointments/');
+    const allAppointments = appointmentsRes.data;
+    const appointments = allAppointments.filter(a => a.doctor_id === doctorId);
 
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -136,6 +135,10 @@ const fetchDoctorStats = async () => {
   } catch (err) {
     console.error("Failed to fetch doctor stats", err);
   }
+};
+
+ const handleRefreshAppointments = (range) => {
+  fetchDoctorStats(range);
 };
 
 const fetchPatientStats = async () => {

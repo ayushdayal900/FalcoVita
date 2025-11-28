@@ -40,8 +40,24 @@
       <!-- Upcoming Appointments -->
       <div class="col-lg-6">
         <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+          <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0 text-dark">Upcoming Appointments</h5>
+            <div class="btn-group btn-group-sm" role="group">
+              <button 
+                type="button" 
+                :class="['btn', timeRange === 'today' ? 'btn-primary' : 'btn-outline-primary']"
+                @click="changeTimeRange('today')"
+              >
+                Today
+              </button>
+              <button 
+                type="button" 
+                :class="['btn', timeRange === 'week' ? 'btn-primary' : 'btn-outline-primary']"
+                @click="changeTimeRange('week')"
+              >
+                This Week
+              </button>
+            </div>
           </div>
           <div class="card-body p-4">
             <div v-if="upcomingAppointments.length > 0" class="list-group list-group-flush">
@@ -49,7 +65,7 @@
                    class="list-group-item border-0 px-0 py-3 d-flex align-items-center justify-content-between">
                 <div>
                   <p class="fw-bold mb-0 text-dark">{{ apt.patient?.user?.name || 'Unknown Patient' }}</p>
-                  <small class="text-muted">{{ new Date(apt.appointment_date).toLocaleString() }}</small>
+                  <small class="text-muted">{{ formatDateTime(apt.appointment_date) }}</small>
                 </div>
                 <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
                   {{ apt.status }}
@@ -57,7 +73,11 @@
               </div>
             </div>
             <div v-else class="text-center py-5 text-muted">
-              <p class="mb-0">No upcoming appointments found.</p>
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-calendar-x mb-3 opacity-50" viewBox="0 0 16 16">
+                <path d="M6.146 7.146a.5.5 0 0 1 .708 0L8 8.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 9l1.147 1.146a.5.5 0 0 1-.708.708L8 9.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 9 6.146 7.854a.5.5 0 0 1 0-.708z"/>
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+              </svg>
+              <p class="mb-0">No upcoming appointments {{ timeRange === 'today' ? 'today' : 'this week' }}.</p>
             </div>
           </div>
         </div>
@@ -137,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, defineEmits } from 'vue';
 import { useStore } from 'vuex';
 import api from '@/services/api';
 
@@ -153,15 +173,41 @@ const props = defineProps({
   departmentId: Number
 });
 
+const emit = defineEmits(['refresh-appointments']);
+
 const store = useStore();
 const showHistoryModal = ref(false);
 const selectedPatient = ref(null);
+const timeRange = ref('week');
 const historyForm = ref({
   visit_type: 'Checkup',
   diagnosis: '',
   treatment: '',
   notes: ''
 });
+
+const changeTimeRange = (range) => {
+  timeRange.value = range;
+  emit('refresh-appointments', range);
+};
+
+const formatDateTime = (dateString) => {
+  const date = new Date(dateString);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const dateStr = date.toLocaleDateString();
+  const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  if (date.toDateString() === today.toDateString()) {
+    return `Today at ${timeStr}`;
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return `Tomorrow at ${timeStr}`;
+  } else {
+    return `${dateStr} at ${timeStr}`;
+  }
+};
 
 const openHistoryModal = (patient) => {
   selectedPatient.value = patient;

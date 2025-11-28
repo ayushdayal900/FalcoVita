@@ -161,12 +161,14 @@ class Appointment(BaseModel):
     department_id = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
     appointment_date = db.Column(db.DateTime(timezone=True), nullable=False)
     status = db.Column(db.String(50), nullable=False)  # e.g., scheduled, completed, canceled
+    availability_slot_id = db.Column(db.Integer, db.ForeignKey('availability_slot.id'), nullable=True)
 
     # relationships
     patient = db.relationship('Patient', back_populates='appointments')
     doctor = db.relationship('Doctor', back_populates='appointments')
     department = db.relationship('Department', back_populates='appointments')
     history = db.relationship('PatientHistory', back_populates='appointment', uselist=False)
+    availability_slot = db.relationship('AvailabilitySlot', back_populates='appointment')
 
     def to_dict(self):
         data = self.to_dict_base()
@@ -182,6 +184,7 @@ class Appointment(BaseModel):
             "department_id": self.department_id,
             "appointment_date": appt_date.isoformat() if appt_date else None,
             "status": self.status,
+            "availability_slot_id": self.availability_slot_id,
             "patient": self.patient.to_dict() if self.patient else None,
             "doctor": self.doctor.to_dict() if self.doctor else None,
             "department": self.department.to_dict() if self.department else None,
@@ -252,8 +255,9 @@ class AvailabilitySlot(BaseModel):
     time_slot = db.Column(db.String(50), nullable=False)  # e.g., "09:00-10:00"
     status = db.Column(db.Enum('available', 'booked', name='slot_status'), default='available', nullable=False)
 
-    # relationship
+    # relationships
     doctor = db.relationship('Doctor', back_populates='availabilities')
+    appointment = db.relationship('Appointment', back_populates='availability_slot', uselist=False)
 
     def to_dict(self):
         data = self.to_dict_base()
