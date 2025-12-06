@@ -1,0 +1,623 @@
+openapi: 3.0.0
+info:
+  title: FalcoVita Hospital Management API
+  description: API documentation for the FalcoVita Hospital Management System.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local Development Server
+
+paths:
+  # ----------------------------------------------------------------
+  # AUTHENTICATION
+  # ----------------------------------------------------------------
+  /api/auth/login:
+    post:
+      summary: User Login
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                  id:
+                    type: integer
+                  role:
+                    type: string
+        401:
+          description: Invalid credentials
+
+  /api/auth/register:
+    post:
+      summary: User Registration
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, role]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [patient, doctor, admin]
+                contact_number:
+                  type: string
+                # Doctor specific
+                department_id:
+                  type: integer
+                specialization:
+                  type: string
+                qualifications:
+                  type: string
+                experience:
+                  type: integer
+                # Patient specific
+                dob:
+                  type: string
+                  format: date
+                contact:
+                  type: string
+                doctor_id:
+                  type: integer
+      responses:
+        201:
+          description: User registered successfully
+        400:
+          description: Missing required fields
+        409:
+          description: User already exists
+
+  # ----------------------------------------------------------------
+  # ADMIN
+  # ----------------------------------------------------------------
+  /api/admin/dashboard:
+    get:
+      summary: Get Dashboard Statistics
+      tags: [Admin]
+      responses:
+        200:
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_doctors:
+                    type: integer
+                  total_patients:
+                    type: integer
+                  total_appointments:
+                    type: integer
+                  upcoming_appointments:
+                    type: integer
+
+  /api/admin/doctors:
+    get:
+      summary: List all doctors (Admin view)
+      tags: [Admin]
+      responses:
+        200:
+          description: List of doctors
+    post:
+      summary: Create a new doctor
+      tags: [Admin]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorInput'
+      responses:
+        201:
+          description: Doctor created
+
+  /api/admin/doctors/{id}:
+    get:
+      summary: Get doctor details
+      tags: [Admin]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Doctor details
+    put:
+      summary: Update doctor details
+      tags: [Admin]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorInput'
+      responses:
+        200:
+          description: Doctor updated
+    delete:
+      summary: Delete doctor
+      tags: [Admin]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Doctor deleted
+
+  /api/admin/patients:
+    get:
+      summary: List all patients (Admin view)
+      tags: [Admin]
+      responses:
+        200:
+          description: List of patients
+    post:
+      summary: Create a new patient
+      tags: [Admin]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      responses:
+        201:
+          description: Patient created
+
+  /api/admin/search:
+    get:
+      summary: Search doctors and patients
+      tags: [Admin]
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          required: true
+          description: Search query
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [all, doctor, patient]
+      responses:
+        200:
+          description: Search results
+
+  /api/admin/blacklist/{user_id}:
+    post:
+      summary: Blacklist a user
+      tags: [Admin]
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: User blacklisted
+    delete:
+      summary: Remove user from blacklist
+      tags: [Admin]
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: User removed from blacklist
+
+  # ----------------------------------------------------------------
+  # DOCTORS
+  # ----------------------------------------------------------------
+  /api/doctors/:
+    get:
+      summary: List all doctors
+      tags: [Doctors]
+      parameters:
+        - in: query
+          name: department_id
+          schema:
+            type: integer
+        - in: query
+          name: include_blocked
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: List of doctors
+
+  /api/doctors/{id}:
+    get:
+      summary: Get doctor profile
+      tags: [Doctors]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Doctor details
+
+  # ----------------------------------------------------------------
+  # PATIENTS
+  # ----------------------------------------------------------------
+  /api/patients/:
+    get:
+      summary: List all patients
+      tags: [Patients]
+      parameters:
+        - in: query
+          name: doctor_id
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of patients
+
+  /api/patients/{id}:
+    get:
+      summary: Get patient profile
+      tags: [Patients]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Patient details
+
+  # ----------------------------------------------------------------
+  # APPOINTMENTS
+  # ----------------------------------------------------------------
+  /api/appointments/:
+    get:
+      summary: List all appointments
+      tags: [Appointments]
+      responses:
+        200:
+          description: List of appointments
+    post:
+      summary: Book an appointment
+      tags: [Appointments]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_id, doctor_id, department_id, appointment_date]
+              properties:
+                patient_id:
+                  type: integer
+                doctor_id:
+                  type: integer
+                department_id:
+                  type: integer
+                appointment_date:
+                  type: string
+                  format: date-time
+      responses:
+        201:
+          description: Appointment booked
+
+  /api/appointments/{id}:
+    get:
+      summary: Get appointment details
+      tags: [Appointments]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Appointment details
+    put:
+      summary: Update appointment status
+      tags: [Appointments]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [scheduled, completed, canceled]
+      responses:
+        200:
+          description: Appointment updated
+    delete:
+      summary: Cancel/Delete appointment
+      tags: [Appointments]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Appointment deleted
+
+  # ----------------------------------------------------------------
+  # AVAILABILITY SLOTS
+  # ----------------------------------------------------------------
+  /api/availability/:
+    get:
+      summary: List all availability slots
+      tags: [Availability]
+      responses:
+        200:
+          description: List of slots
+    post:
+      summary: Create availability slot
+      tags: [Availability]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [doctor_id, available_date, time_slot]
+              properties:
+                doctor_id:
+                  type: integer
+                available_date:
+                  type: string
+                  format: date
+                time_slot:
+                  type: string
+                  example: "09:00-10:00"
+      responses:
+        201:
+          description: Slot created
+
+  /api/availability/doctor/{doctor_id}:
+    get:
+      summary: Get slots for a specific doctor
+      tags: [Availability]
+      parameters:
+        - in: path
+          name: doctor_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: List of slots
+
+  # ----------------------------------------------------------------
+  # PATIENT HISTORY
+  # ----------------------------------------------------------------
+  /api/history/:
+    get:
+      summary: List all history records
+      tags: [History]
+      responses:
+        200:
+          description: List of records
+    post:
+      summary: Add history record
+      tags: [History]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_id, doctor_id, department_id, visit_type, visit_date]
+              properties:
+                patient_id:
+                  type: integer
+                doctor_id:
+                  type: integer
+                department_id:
+                  type: integer
+                appointment_id:
+                  type: integer
+                visit_type:
+                  type: string
+                visit_date:
+                  type: string
+                  format: date-time
+                diagnosis:
+                  type: string
+      responses:
+        201:
+          description: Record added
+
+  /api/history/patient/{patient_id}:
+    get:
+      summary: Get history for a patient
+      tags: [History]
+      parameters:
+        - in: path
+          name: patient_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Patient history
+
+  # ----------------------------------------------------------------
+  # PRESCRIPTIONS
+  # ----------------------------------------------------------------
+  /api/prescriptions/:
+    post:
+      summary: Add prescription
+      tags: [Prescriptions]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [history_id, medicines, dosage]
+              properties:
+                history_id:
+                  type: integer
+                medicines:
+                  type: string
+                dosage:
+                  type: string
+                instructions:
+                  type: string
+      responses:
+        201:
+          description: Prescription added
+
+  # ----------------------------------------------------------------
+  # DEPARTMENTS
+  # ----------------------------------------------------------------
+  /api/departments/:
+    get:
+      summary: List all departments
+      tags: [Departments]
+      responses:
+        200:
+          description: List of departments
+    post:
+      summary: Create department
+      tags: [Departments]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                overview:
+                  type: string
+      responses:
+        201:
+          description: Department created
+
+  # ----------------------------------------------------------------
+  # EXPORTS
+  # ----------------------------------------------------------------
+  /api/export/patient-history/{patient_id}:
+    get:
+      summary: Export patient history as CSV
+      tags: [Export]
+      parameters:
+        - in: path
+          name: patient_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  /api/export/appointments:
+    get:
+      summary: Export all appointments as CSV
+      tags: [Export]
+      responses:
+        200:
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+components:
+  schemas:
+    DoctorInput:
+      type: object
+      required: [name, email, password, department_id, specialization, qualifications, experience]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        contact_number:
+          type: string
+        department_id:
+          type: integer
+        specialization:
+          type: string
+        qualifications:
+          type: string
+        experience:
+          type: integer
+
+    PatientInput:
+      type: object
+      required: [name, email, password, dob, contact]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        dob:
+          type: string
+          format: date
+        contact:
+          type: string
+        doctor_id:
+          type: integer

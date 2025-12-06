@@ -1,0 +1,7 @@
+from backend.services.doctors_services import DoctorService
+from backend.services.patients_services import PatientService
+from backend.services.appointment_services import AppointmentService
+from backend.services.availability_slot_services import AvailabilitySlotService
+from backend.services.patient_history_services import PatientHistoryService
+from backend.services.service_errors import ServiceError
+from backend.services.prescription_services import PrescriptionService
