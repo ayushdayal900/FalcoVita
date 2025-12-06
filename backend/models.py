@@ -338,7 +338,8 @@ class Billing(BaseModel):
                 "patient_contact": p_contact,
                 "doctor_name": doc_name,
                 "department": dept_name,
-                "visit_type": "OPD Consultation" 
+                "visit_type": "OPD Consultation",
+                "appointment_date": self.appointment.appointment_date.isoformat() if self.appointment and self.appointment.appointment_date else None
             }
         })
         return data

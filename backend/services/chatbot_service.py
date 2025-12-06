@@ -229,6 +229,13 @@ class ChatbotService:
                         if matching_slots:
                             data['preferred_slots'] = matching_slots
 
+            # FALLBACK: If checking availability but no doctor found, suggest doctors
+            elif action_type == 'check_availability':
+                doctors = Doctor.query.join(User).limit(4).all()
+                act['action'] = 'choices'
+                act['data']['options'] = [f"Check {d.user.name}" for d in doctors if d.user]
+                return act
+
             # Normalize date
             if date_str:
                 try:
