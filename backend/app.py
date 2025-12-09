@@ -10,7 +10,7 @@ from backend.config import DevelopmentConfig
 from backend.resources import (
     auth_bp, api_bp, api, doctor_bp, patient_bp, 
     appointment_bp, availability_bp, history_bp, prescription_bp, admin_bp, department_bp, export_bp, chatbot_bp,
-    billing_bp
+    billing_bp, feedback_bp, analytics_bp
 )
 
 
@@ -55,6 +55,8 @@ def create_app():
     app.register_blueprint(export_bp)
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(billing_bp)
+    app.register_blueprint(feedback_bp)
+    app.register_blueprint(analytics_bp)
 
     # Initialize API
     api.init_app(app)

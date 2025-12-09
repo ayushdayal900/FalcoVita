@@ -1,9 +1,10 @@
 <template>
   <aside class="d-flex flex-column flex-shrink-0 p-3 bg-white border-end" style="width: 280px; height: 100vh; position: sticky; top: 0; z-index: 1000;">
     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none border-bottom pb-3 w-100">
+      <img src="/logo.png" alt="FalcoVita Logo" width="100" height="100" class="me-2 rounded-circle">
       <div class="lh-1">
-        <span class="fs-5 fw-bold text-dark">FalcoVita</span>
-        <span class="d-block text-uppercase text-primary fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Hospital System</span>
+        <span class="fs-5 fw-bold text-dark">FalcoVita</span> 
+        <span class="d-block text-uppercase text-primary fw-bold mt-3" style="font-size: 0.65rem; letter-spacing: 1px;">Hospital System</span>
       </div>
     </a>
 

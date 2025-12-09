@@ -10,6 +10,7 @@ from .department_resource import department_bp
 from .export_resource import export_bp
 from .chatbot import chatbot_bp
 from .billing_resource import billing_bp
+from .feedback_resource import feedback_bp
 
 from flask import Blueprint
 from flask_restful import Api
@@ -31,5 +32,28 @@ __all__ = [
     "department_bp",
     "export_bp",
     "chatbot_bp",
-    "billing_bp"
+    "billing_bp",
+    "feedback_bp",
+    "analytics_bp"
 ]
+
+from flask import Blueprint
+from flask_restful import Api
+
+# Define Analytics Blueprint separately to avoid circular imports or messy single-file logic
+# Ideally this should be in analytics_resource.py but for consistency with others:
+from .analytics_resource import (
+    AnalyticsDashboardResource, AnalyticsDemographicsResource,
+    AnalyticsAppointmentsResource, AnalyticsFinancialResource,
+    AnalyticsInventoryResource, AnalyticsGoalsResource
+)
+
+analytics_bp = Blueprint('analytics_bp', __name__)
+analytics_api = Api(analytics_bp)
+
+analytics_api.add_resource(AnalyticsDashboardResource, '/api/analytics/dashboard')
+analytics_api.add_resource(AnalyticsDemographicsResource, '/api/analytics/demographics')
+analytics_api.add_resource(AnalyticsAppointmentsResource, '/api/analytics/appointments')
+analytics_api.add_resource(AnalyticsFinancialResource, '/api/analytics/financial')
+analytics_api.add_resource(AnalyticsInventoryResource, '/api/analytics/inventory')
+analytics_api.add_resource(AnalyticsGoalsResource, '/api/analytics/goals')

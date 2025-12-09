@@ -107,6 +107,7 @@ class Doctor(BaseModel):
             "experience": self.experience,
             "user": self.user.to_dict() if self.user else None,
             "department": self.department.to_dict() if self.department else None,
+            "patient_count": len(self.patients) if self.patients else 0,
         })
         return data
 
@@ -129,6 +130,7 @@ class Patient(BaseModel):
     dob = db.Column(db.DateTime(timezone=True), nullable=False)
     contact = db.Column(db.String(15), unique=True, nullable=False)
     medical_record_number = db.Column(db.String(100), unique=True, nullable=False)
+    gender = db.Column(db.String(10), default='Other', nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
 
     # One-to-one with User
@@ -145,8 +147,12 @@ class Patient(BaseModel):
             "dob": self.dob.isoformat() if self.dob else None,
             "contact": self.contact,
             "medical_record_number": self.medical_record_number,
+            "gender": self.gender,
             "doctor_id": self.doctor_id,
             "user": self.user.to_dict() if self.user else None,
+            "paid_billings_count": sum(1 for b in self.billings if b.status == 'paid') if self.billings else 0,
+            "unpaid_billings_count": sum(1 for b in self.billings if b.status in ['pending', 'overdue']) if self.billings else 0,
+            "total_unpaid_amount": sum(b.total_amount for b in self.billings if b.status in ['pending', 'overdue']) if self.billings else 0.0,
         })
         return data
 
@@ -210,6 +216,7 @@ class Appointment(BaseModel):
             "patient": self.patient.to_dict() if self.patient else None,
             "doctor": self.doctor.to_dict() if self.doctor else None,
             "department": self.department.to_dict() if self.department else None,
+            "has_feedback": bool(self.feedback)
         })
         return data
 
@@ -223,6 +230,7 @@ class PatientHistory(BaseModel):
     visit_type = db.Column(db.String(100), nullable=False)  # e.g., consultation, follow-up
     visit_date = db.Column(db.DateTime(timezone=True), nullable=False)
     diagnosis = db.Column(db.String(255), nullable=True)
+    vitals = db.Column(db.String(255), nullable=True) # JSON format string: {"bp": "120/80", "hr": 72, "temp": 98.6}
 
     # relationships
     patient = db.relationship('Patient', back_populates='histories')
@@ -241,6 +249,7 @@ class PatientHistory(BaseModel):
             "visit_type": self.visit_type,
             "visit_date": self.visit_date.isoformat() if self.visit_date else None,
             "diagnosis": self.diagnosis,
+            "vitals": self.vitals,
             "prescriptions": [p.to_dict() for p in self.prescriptions],
             "doctor": self.doctor.to_dict() if self.doctor else None,
             "department": self.department.to_dict() if self.department else None,
@@ -427,5 +436,52 @@ class EscalationTicket(BaseModel):
             "requested_by": self.requested_by,
             "reason": self.reason,
             "status": self.status
+        })
+        return data
+
+class HospitalGoal(BaseModel):
+    __tablename__ = 'hospital_goal'
+
+    name = db.Column(db.String(100), nullable=False) # e.g., "Monthly Revenue", "Patient Satisfaction"
+    target_value = db.Column(db.Float, nullable=False)
+    current_value = db.Column(db.Float, default=0.0, nullable=False)
+    period = db.Column(db.String(50), default="Monthly") 
+    unit = db.Column(db.String(20), default="") # e.g., "$", "%"
+
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "name": self.name,
+            "target_value": self.target_value,
+            "current_value": self.current_value,
+            "period": self.period,
+            "unit": self.unit
+        })
+        return data
+
+class Feedback(BaseModel):
+    __tablename__ = 'feedback'
+
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'), unique=True, nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5
+    comment = db.Column(db.Text, nullable=True)
+
+    # Relationships
+    appointment = db.relationship('Appointment', backref=db.backref('feedback', uselist=False))
+    doctor = db.relationship('Doctor', backref='feedbacks')
+    patient = db.relationship('Patient', backref='feedbacks')
+
+    def to_dict(self):
+        data = self.to_dict_base()
+        data.update({
+            "appointment_id": self.appointment_id,
+            "doctor_id": self.doctor_id,
+            "patient_id": self.patient_id,
+            "rating": self.rating,
+            "comment": self.comment,
+            # optional expansions
+            "patient_name": self.patient.user.name if self.patient and self.patient.user else "Anonymous"
         })
         return data

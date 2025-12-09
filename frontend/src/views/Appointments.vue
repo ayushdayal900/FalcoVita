@@ -164,6 +164,17 @@
                           Complete
                         </button>
                       </template>
+
+                      <template v-else-if="item.data.status === 'completed' && userRole === 'patient' && !item.data.has_feedback">
+                        <button @click="openFeedbackModal(item.data.id)" class="btn btn-sm btn-outline-warning flex-grow-1 fw-bold">
+                           ★ Give Feedback
+                        </button>
+                      </template>
+                       <template v-else-if="item.data.status === 'completed' && userRole === 'patient' && item.data.has_feedback">
+                        <div class="w-100 text-center py-1 text-success small fw-bold">
+                           ✓ Feedback Submitted
+                        </div>
+                      </template>
                       <div v-else class="w-100 text-center py-1 text-muted small fst-italic">
                         No actions available
                       </div>
@@ -468,6 +479,38 @@
       </div>
     </div>
 
+    <!-- Feedback Modal -->
+    <div v-if="showFeedbackModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+          <div class="modal-header bg-warning text-dark border-bottom-0 rounded-top-4">
+            <h5 class="modal-title fw-bold">Rate Your Experience</h5>
+            <button type="button" class="btn-close" @click="showFeedbackModal = false"></button>
+          </div>
+          <div class="modal-body p-4">
+            <form @submit.prevent="submitFeedback">
+              <div class="mb-3 text-center">
+                 <label class="form-label fw-bold d-block text-muted small text-uppercase">Rating</label>
+                 <div class="rating-stars fs-1 text-warning" style="cursor: pointer;">
+                    <span v-for="n in 5" :key="n" @click="feedbackForm.rating = n" class="mx-1 hover-scale transition-all">
+                        {{ n <= feedbackForm.rating ? '★' : '☆' }}
+                    </span>
+                 </div>
+              </div>
+              <div class="mb-3 pt-2">
+                <label class="form-label fw-bold small">Comments (Optional)</label>
+                <textarea v-model="feedbackForm.comment" class="form-control" rows="3" placeholder="How was your visit?"></textarea>
+              </div>
+              <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <button type="button" @click="showFeedbackModal = false" class="btn btn-light">Cancel</button>
+                <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm">Submit Review</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -489,6 +532,7 @@ const doctors = ref([]); // For booking dropdown
 const loading = ref(true);
 const showBookModal = ref(false);
 const showPaymentModal = ref(false);
+const showFeedbackModal = ref(false);
 const showAddSlotModal = ref(false);
 const search = ref('');
 const pendingBookingPayload = ref(null);
@@ -691,6 +735,32 @@ const submitCompletion = async () => {
     console.error('Failed to complete appointment', err);
     alert('Failed to complete appointment.');
   }
+};
+
+const feedbackForm = ref({ rating: 5, comment: '' });
+const feedbackApptId = ref(null);
+
+const openFeedbackModal = (apptId) => {
+    feedbackApptId.value = apptId;
+    feedbackForm.value = { rating: 5, comment: '' };
+    showFeedbackModal.value = true;
+};
+
+const submitFeedback = async () => {
+    if (!feedbackApptId.value) return;
+    try {
+        await api.post('/feedback/', {
+            appointment_id: feedbackApptId.value,
+            rating: feedbackForm.value.rating,
+            comment: feedbackForm.value.comment
+        });
+        showFeedbackModal.value = false;
+        fetchAppointments(); 
+        alert("Thank you for your feedback!");
+    } catch (err) {
+        console.error(err);
+        alert("Failed to submit feedback.");
+    }
 };
 
 const rescheduleAppointment = async (appt) => {

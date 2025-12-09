@@ -16,7 +16,7 @@ class PatientService:
     @staticmethod
     def get_all():
         from sqlalchemy.orm import joinedload
-        patients = Patient.query.options(joinedload(Patient.user)).all()
+        patients = Patient.query.options(joinedload(Patient.user), joinedload(Patient.billings)).all()
         if not patients:
             raise ServiceError("No patients found")
         return [patient.to_dict() for patient in patients]

@@ -90,3 +90,35 @@ Follow these instructions to set up and run the project locally.
     npm run dev
     ```
     The application will be accessible at `http://localhost:5173` (or the port shown in your terminal).
+
+## Command Cheat Sheet
+
+### Redis Interaction (Database 1)
+Access the Redis CLI for the database used by the application (DB 1).
+```bash
+redis-cli -n 1
+redis-cli -n 1 keys "*"
+redis-cli -n 1 GET "/path"
+```
+
+### Background Services
+```bash
+# Start Mailhog
+mailhog
+
+# Start Celery Worker
+celery -A backend.app.celery worker --loglevel=info
+
+# Start Celery Beat
+celery -A backend.app.celery beat --loglevel=info
+```
+
+### Application Run Commands
+```bash
+# Start Backend
+python -m backend.app
+
+# Start Frontend
+cd frontend
+npm run dev
+```

@@ -9,7 +9,8 @@ from backend.extensions import db
 from backend.models import (
     User, Role, UserRoles,
     Doctor, Patient, Department,
-    Appointment, PatientHistory, Prescription, AvailabilitySlot
+    Appointment, PatientHistory, Prescription, AvailabilitySlot,
+    Billing, Payment
 )
 from backend.app import app  
 from flask_security.datastore import SQLAlchemyUserDatastore
@@ -104,6 +105,7 @@ def seed_data():
                 dob=fake.date_time_between(start_date="-70y", end_date="-18y", tzinfo=timezone.utc),
                 contact=fake.phone_number()[:15],
                 medical_record_number=f"MRN-{fake.unique.random_int(10000,99999)}",
+                gender=random.choice(["Male", "Female", "Other"]),
                 doctor_id=random.choice(doctors).id
             )
             patients.append(patient)
@@ -112,44 +114,94 @@ def seed_data():
         db.session.add_all(patients)
         db.session.commit()
 
-        print("Creating appointments, histories, and prescriptions...")
+        print("Creating appointments, histories, prescriptions, billing, and feedback...")
         statuses = ["scheduled", "completed", "cancelled"]
+        
+        # Helper for random vitals
+        import json
+        def generate_vitals():
+            return json.dumps({
+                "bp": f"{random.randint(110,140)}/{random.randint(70,90)}",
+                "hr": random.randint(60, 100),
+                "temp": round(random.uniform(97, 100),1)
+            })
+
         for patient in patients:
-            for _ in range(random.randint(1, 3)):
+            for _ in range(random.randint(1, 4)):
                 doctor = random.choice(doctors)
                 department = doctor.department
 
                 appointment_date = fake.date_time_between(start_date="-90d", end_date="+10d", tzinfo=timezone.utc)
+                status = random.choice(statuses)
 
                 appointment = Appointment(
                     patient_id=patient.id,
                     doctor_id=doctor.id,
                     department_id=department.id,
                     appointment_date=appointment_date,
-                    status=random.choice(statuses),
+                    status=status,
                 )
                 db.session.add(appointment)
                 db.session.flush()
+                
+                # Billing (if completed or scheduled)
+                if status in ['completed', 'scheduled']:
+                    amount = random.choice([50, 100, 200])
+                    billing_status = random.choice(['paid', 'pending', 'overdue'])
+                    bill = Billing(
+                        patient_id=patient.id,
+                        appointment_id=appointment.id,
+                        total_amount=amount,
+                        status=billing_status,
+                        due_date=appointment_date + timedelta(days=7)
+                    )
+                    db.session.add(bill)
+                    db.session.flush() # Ensure ID is generated
+                    
+                    if billing_status == 'paid':
+                        payment = Payment(
+                            billing_id=bill.id,
+                            amount_paid=amount,
+                            payment_method=random.choice(['Cash', 'Credit Card', 'Insurance']),
+                            payment_date=appointment_date,
+                            transaction_id=f"TXN-{fake.uuid4()[:8]}"
+                        )
+                        db.session.add(payment)
 
-                history = PatientHistory(
-                    patient_id=patient.id,
-                    doctor_id=doctor.id,
-                    department_id=department.id,
-                    appointment_id=appointment.id,
-                    visit_type=random.choice(["Consultation", "Follow-up"]),
-                    visit_date=appointment_date,
-                    diagnosis=fake.sentence(nb_words=6)
-                )
-                db.session.add(history)
-                db.session.flush()
+                if status == 'completed':
+                    # Create History
+                    history = PatientHistory(
+                        patient_id=patient.id,
+                        doctor_id=doctor.id,
+                        department_id=department.id,
+                        appointment_id=appointment.id,
+                        visit_type=random.choice(["Consultation", "Follow-up"]),
+                        visit_date=appointment_date,
+                        diagnosis=fake.sentence(nb_words=6),
+                        vitals=generate_vitals()
+                    )
+                    db.session.add(history)
+                    db.session.flush()
 
-                prescription = Prescription(
-                    history_id=history.id,
-                    medicines=f"{fake.word()} {random.randint(100,500)}mg",
-                    dosage=f"{random.randint(1,3)} times/day",
-                    instructions=fake.sentence()
-                )
-                db.session.add(prescription)
+                    prescription = Prescription(
+                        history_id=history.id,
+                        medicines=f"{fake.word()} {random.randint(100,500)}mg",
+                        dosage=f"{random.randint(1,3)} times/day",
+                        instructions=fake.sentence()
+                    )
+                    db.session.add(prescription)
+
+                    # Create Feedback
+                    from backend.models import Feedback
+                    if random.random() > 0.3: # 70% chance of feedback
+                        feedback = Feedback(
+                            appointment_id=appointment.id,
+                            doctor_id=doctor.id,
+                            patient_id=patient.id,
+                            rating=random.randint(1, 5),
+                            comment=fake.sentence()
+                        )
+                        db.session.add(feedback)
 
         db.session.commit()
 
@@ -165,6 +217,47 @@ def seed_data():
                 )
                 db.session.add(slot)
 
+        db.session.commit()
+        
+        print("Creating Inventory and Hospital Goals...")
+        from backend.models import Inventory, HospitalGoal
+        
+        # Inventory
+        items = [
+            ("Paracetamol", "Medicine", 2.50), ("Ibuprofen", "Medicine", 3.00), ("Amoxicillin", "Medicine", 5.00),
+            ("Syringes", "Consumable", 0.50), ("Bandages", "Consumable", 1.00), ("Cotton", "Consumable", 0.20),
+            ("Stethoscope", "Equipment", 50.00), ("BP Monitor", "Equipment", 40.00)
+        ]
+        
+        for name, cat, price in items:
+            item = Inventory(
+                name=name,
+                category=cat,
+                quantity=random.randint(5, 500),
+                reorder_level=20,
+                unit_price=price,
+                supplier=fake.company(),
+                last_restocked=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 60))
+            )
+            db.session.add(item)
+            
+        # Goals
+        goals = [
+            ("Monthly Revenue", 20000.0, 15000.0, "Monthly", "$"),
+            ("Patient Satisfaction", 4.8, 4.2, "Monthly", "Stars"),
+            ("New Patients", 50, 35, "Monthly", "Count")
+        ]
+        
+        for name, target, current, period, unit in goals:
+            goal = HospitalGoal(
+                name=name,
+                target_value=target,
+                current_value=current,
+                period=period,
+                unit=unit
+            )
+            db.session.add(goal)
+            
         db.session.commit()
 
         print("Database seeded successfully!")
