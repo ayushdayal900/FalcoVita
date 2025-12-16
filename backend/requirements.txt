@@ -16,3 +16,4 @@ openai
 pinecone
 elevenlabs
 google-generativeai
+gunicorn
