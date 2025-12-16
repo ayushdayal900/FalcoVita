@@ -2,9 +2,8 @@ import axios from 'axios';
 import store from '@/store';
 
 const api = axios.create({
-    // Hardcoding URL to ensure connectivity (Env var issue in production)
-    baseURL: 'http://65.1.3.180:5000',
-    // baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+    // baseURL: 'http://65.1.3.180:5000', // Hardcoded HTTP (Removed for CloudFront HTTPS)
+    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
     headers: {
         'Content-Type': 'application/json',
     },
