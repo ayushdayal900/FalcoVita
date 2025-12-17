@@ -55,3 +55,8 @@ class ProductionConfig(BaseConfig):
     MAIL_USERNAME = os.environ.get("SMTP_EMAIL")
     MAIL_PASSWORD = os.environ.get("SMTP_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get("SMTP_EMAIL")
+
+    # Caching
+    CACHE_TYPE = "RedisCache"
+    CACHE_REDIS_URL = os.environ.get("REDIS_URL")
+    CACHE_DEFAULT_TIMEOUT = 300
