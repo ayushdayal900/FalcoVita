@@ -37,3 +37,21 @@ class DevelopmentConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
+    
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
+    
+    # Redis & Celery
+    CELERY_BROKER_URL = os.environ.get("REDIS_URL")
+    RESULT_BACKEND = os.environ.get("REDIS_URL")
+
+    # Mail Config
+    MAIL_SERVER = os.environ.get("SMTP_SERVER")
+    MAIL_PORT = int(os.environ.get("SMTP_PORT", 587))
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get("SMTP_EMAIL")
+    MAIL_PASSWORD = os.environ.get("SMTP_PASSWORD")
+    MAIL_DEFAULT_SENDER = os.environ.get("SMTP_EMAIL")

@@ -6,7 +6,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
-from backend.config import DevelopmentConfig
+from backend.config import DevelopmentConfig, ProductionConfig
 from backend.resources import (
     auth_bp, api_bp, api, doctor_bp, patient_bp, 
     appointment_bp, availability_bp, history_bp, prescription_bp, admin_bp, department_bp, export_bp, chatbot_bp,
@@ -31,15 +31,17 @@ def create_app():
     basedir = os.path.abspath(os.path.dirname(__file__))
     CORS(app, resources={r"/*": {"origins": "*"}})
     
-    app.config.from_object(DevelopmentConfig)
-    app.config["WTF_CSRF_ENABLED"] = False
-    app.config["SECURITY_CSRF_PROTECT_MECHANISMS"] = []
-    app.config["SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'db.db')}"
+    if os.environ.get('FLASK_ENV') == 'production':
+        app.config.from_object(ProductionConfig)
+    else:
+        app.config.from_object(DevelopmentConfig)
+        app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'db.db')}"
 
     app.config["SECURITY_REDIRECT_BEHAVIOR"] = "spa"
     app.config["SECURITY_FLASH_MESSAGES"] = False
-    app.config["WTF_CSRF_ENABLED"] = False  # optional
+    app.config["WTF_CSRF_ENABLED"] = False
+    app.config["SECURITY_CSRF_PROTECT_MECHANISMS"] = []
+    app.config["SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS"] = True
 
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -79,4 +81,5 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
