@@ -30,6 +30,10 @@ def create_app():
     app = Flask(__name__)
     basedir = os.path.abspath(os.path.dirname(__file__))
     CORS(app, resources={r"/*": {"origins": "*"}})
+
+    @app.route('/')
+    def health_check():
+        return {"status": "success", "message": "FalcoVita Backend is Live"}, 200
     
     if os.environ.get('FLASK_ENV') == 'production':
         app.config.from_object(ProductionConfig)
