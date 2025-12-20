@@ -1,14 +1,14 @@
 <template>
-  <div class="d-flex align-items-center justify-content-center min-vh-100 bg-light py-5">
+  <div class="register-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-8 col-xl-6">
-          <div class="text-center mb-4">
-            <h1 class="h3 fw-bold text-dark">FalcoVita</h1>
-            <p class="text-muted small">Healthcare Management System</p>
+          <div class="text-center mb-4 text-white hover-scale">
+            <h1 class="h3 fw-bold mb-1">FalcoVita</h1>
+            <p class="small opacity-75">Healthcare Management System</p>
           </div>
 
-          <div class="card shadow-lg border-0 rounded-4">
+          <div class="card glass-card border-0 rounded-4 overflow-hidden">
             <div class="card-body p-4 p-md-5">
               <div class="text-center mb-4">
                 <h2 class="h4 fw-bold text-dark">Create Account</h2>
@@ -20,10 +20,10 @@
                 <div class="d-flex justify-content-center mb-4">
                   <div class="btn-group w-100" role="group" aria-label="Role selection">
                     <input type="radio" class="btn-check" name="role" id="role-patient" value="patient" v-model="role" autocomplete="off">
-                    <label class="btn btn-outline-primary py-2" for="role-patient">Patient</label>
+                    <label class="btn btn-outline-primary py-2 fw-semibold" for="role-patient">Patient</label>
 
                     <input type="radio" class="btn-check" name="role" id="role-doctor" value="doctor" v-model="role" autocomplete="off">
-                    <label class="btn btn-outline-primary py-2" for="role-doctor">Doctor</label>
+                    <label class="btn btn-outline-primary py-2 fw-semibold" for="role-doctor">Doctor</label>
                   </div>
                 </div>
 
@@ -31,28 +31,28 @@
                   <!-- Common Fields -->
                   <div class="col-12">
                     <div class="form-floating">
-                      <input type="text" class="form-control" id="name" v-model="form.name" placeholder="John Doe" required>
+                      <input type="text" class="form-control bg-light-transparent" id="name" v-model="form.name" placeholder="John Doe" required>
                       <label for="name">Full Name</label>
                     </div>
                   </div>
                   
                   <div class="col-md-6">
                     <div class="form-floating">
-                      <input type="email" class="form-control" id="email" v-model="form.email" placeholder="name@example.com" required>
+                      <input type="email" class="form-control bg-light-transparent" id="email" v-model="form.email" placeholder="name@example.com" required>
                       <label for="email">Email Address</label>
                     </div>
                   </div>
 
                   <div class="col-md-6">
                     <div class="form-floating">
-                      <input type="text" class="form-control" id="contact" v-model="form.contact_number" placeholder="+1 (555) 000-0000">
+                      <input type="text" class="form-control bg-light-transparent" id="contact" v-model="form.contact_number" placeholder="+1 (555) 000-0000">
                       <label for="contact">Contact Number</label>
                     </div>
                   </div>
 
                   <div class="col-12">
                     <div class="form-floating">
-                      <input type="password" class="form-control" id="password" v-model="form.password" placeholder="Password" required>
+                      <input type="password" class="form-control bg-light-transparent" id="password" v-model="form.password" placeholder="Password" required>
                       <label for="password">Password</label>
                     </div>
                   </div>
@@ -64,7 +64,7 @@
                     </div>
                     <div class="col-md-6">
                       <div class="form-floating">
-                        <select class="form-select" id="department" v-model="form.department_id" required>
+                        <select class="form-select bg-light-transparent" id="department" v-model="form.department_id" required>
                           <option value="" disabled selected>Select Department</option>
                           <option v-for="dept in departments" :key="dept.id" :value="dept.id">
                             {{ dept.name }}
@@ -75,19 +75,19 @@
                     </div>
                     <div class="col-md-6">
                       <div class="form-floating">
-                        <input type="number" class="form-control" id="experience" v-model="form.experience" placeholder="Years" required>
+                        <input type="number" class="form-control bg-light-transparent" id="experience" v-model="form.experience" placeholder="Years" required>
                         <label for="experience">Experience (Years)</label>
                       </div>
                     </div>
                     <div class="col-12">
                       <div class="form-floating">
-                        <input type="text" class="form-control" id="specialization" v-model="form.specialization" placeholder="Cardiology" required>
+                        <input type="text" class="form-control bg-light-transparent" id="specialization" v-model="form.specialization" placeholder="Cardiology" required>
                         <label for="specialization">Specialization</label>
                       </div>
                     </div>
                     <div class="col-12">
                       <div class="form-floating">
-                        <input type="text" class="form-control" id="qualifications" v-model="form.qualifications" placeholder="MBBS, MD" required>
+                        <input type="text" class="form-control bg-light-transparent" id="qualifications" v-model="form.qualifications" placeholder="MBBS, MD" required>
                         <label for="qualifications">Qualifications</label>
                       </div>
                     </div>
@@ -100,17 +100,16 @@
                     </div>
                     <div class="col-md-6">
                       <div class="form-floating">
-                        <input type="date" class="form-control" id="dob" v-model="form.dob" required>
+                        <input type="date" class="form-control bg-light-transparent" id="dob" v-model="form.dob" required>
                         <label for="dob">Date of Birth</label>
                       </div>
                     </div>
-
                   </template>
                 </div>
 
                 <button 
                   type="submit" 
-                  class="btn btn-primary w-100 py-3 fw-bold shadow-sm mt-4"
+                  class="btn btn-primary w-100 py-3 fw-bold shadow-sm mt-4 gradient-btn"
                   :disabled="loading"
                 >
                   <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -118,10 +117,10 @@
                 </button>
               </form>
 
-              <div class="text-center mt-4 pt-3 border-top">
+              <div class="text-center mt-4 pt-3 border-top border-light">
                 <p class="text-muted small mb-0">
                   Already have an account? 
-                  <router-link to="/login" class="text-primary text-decoration-none fw-bold">Sign In</router-link>
+                  <router-link to="/login" class="text-primary text-decoration-none fw-bold hover-scale-sm d-inline-block">Sign In</router-link>
                 </p>
               </div>
               
@@ -136,8 +135,8 @@
             </div>
           </div>
           
-          <div class="text-center mt-4">
-            <p class="text-muted small opacity-75">&copy; 2024 FalcoVita. All rights reserved.</p>
+          <div class="text-center mt-4 text-white-50">
+            <p class="small">&copy; 2024 FalcoVita. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -164,14 +163,11 @@ const form = reactive({
   email: '',
   password: '',
   contact_number: '',
-  // Doctor
   department_id: '',
   specialization: '',
   qualifications: '',
   experience: '',
-  // Patient
   dob: '',
-
 });
 
 const handleRegister = async () => {
@@ -196,13 +192,12 @@ const handleRegister = async () => {
   } else {
     Object.assign(payload, {
       dob: form.dob,
-      contact: form.contact_number, // Backend expects 'contact' for patient
+      contact: form.contact_number,
     });
   }
 
   try {
     await store.dispatch('register', payload);
-    // Redirect to login after successful registration
     router.push('/login');
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration failed.';
@@ -223,11 +218,65 @@ const fetchDepartments = async () => {
 onMounted(() => {
   fetchDepartments();
 });
-
 </script>
 
 <style scoped>
-.tracking-tight {
-  letter-spacing: -0.025em;
+.register-wrapper {
+  background: url('@/assets/app_background.png') no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed; /* Parallax-like effect */
+}
+
+/* Glassmorphism Card (Shared with Login) */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+}
+
+.bg-light-transparent {
+  background-color: rgba(248, 249, 250, 0.7);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.bg-light-transparent:focus {
+  background-color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Enhancements */
+.gradient-btn {
+  background: linear-gradient(135deg, #0d6efd, #0099ff);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.gradient-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-scale-sm {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale-sm:hover {
+  transform: scale(1.05);
 }
 </style>
