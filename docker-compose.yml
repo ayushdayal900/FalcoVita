@@ -8,10 +8,13 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - FLASK_ENV=development
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
     volumes:
       - ./backend:/app
     depends_on:
       - redis
+      - mailhog
 
   frontend:
     build: ./frontend
@@ -25,11 +28,32 @@ services:
     ports:
       - "6379:6379"
 
+  mailhog:
+    image: "mailhog/mailhog"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   celery_worker:
     build: ./backend
-    command: celery -A app.celery worker --loglevel=info
+    command: celery -A backend.celery_config.celery_app worker --loglevel=info
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
     depends_on:
       - redis
       - backend
+      - mailhog
+
+  celery_beat:
+    build: ./backend
+    command: celery -A backend.celery_config.celery_app beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SMTP_SERVER=mailhog
+      - SMTP_PORT=1025
+    depends_on:
+      - redis
+      - backend
+

@@ -12,7 +12,6 @@
         <div class="f-bird-wrapper">
           <img src="@/assets/falcon_wings_up.png" alt="FalcoVita Bird" class="bird-mascot bird-up" :class="{ active: wingState === 'up' }" />
           <img src="@/assets/falcon_wings_down.png" alt="FalcoVita Bird" class="bird-mascot bird-down" :class="{ active: wingState === 'down' }" />
-          
         </div>
       </div>
     </div>
@@ -124,7 +123,7 @@ onMounted(() => {
   // Start flapping animation
   wingInterval = setInterval(() => {
     wingState.value = wingState.value === 'up' ? 'down' : 'up';
-  }, 300); // Flap every 200ms
+  }, 800); // Flap every 200ms
 
   // Show intro for 4 seconds then fade it out
   setTimeout(() => {

@@ -1,0 +1,52 @@
+Grade: A 
+FalcoVita is a comprehensive, full-stack hospital management system designed to streamline healthcare administration and enhance patient care. It is built using Python (Flask) for a robust backend, SQLite as the transactional database, and a dynamic Vue.js 3 frontend styled with Bootstrap 5.
+
+Key features include:
+
+Role-Based Access Control (Distinct portals for Admins, Doctors, and Patients)
+Smart Appointment Scheduling & Availability Tracking
+Electronic Health Records (EHR) with Prescriptions & History
+Integrated Billing & Payments System
+Inventory & Department Management
+AI-Powered Chatbot & Analytics Dashboards
+The application utilizes a modular RESTful API architecture to handle complex operations such as user management, medical data processing, and financial reporting. Heavy background processes are efficiently managed asynchronously using Celery and Redis.
+
+Security is paramount, leveraging Flask-Security-Too for robust authentication, secure session management, and granular permission handling to protect sensitive medical data.
+
+The modern, responsive interface ensures a seamless user experience across all devices, effectively bridging the gap between medical professionals and patients.
+
+
+Frontend
+Framework: Vue.js 3 (Composition API)
+Build Tool: Vite (Fast development server & bundler)
+Styling: Bootstrap 5 (Component library & responsive grid)
+State Management: Vuex 4
+Routing: Vue Router 4
+HTTP Client: Axios
+Data Visualization: Chart.js (via vue-chartjs)
+
+
+Backend
+Core Framework: Python (Flask)
+API Architecture: RESTful API (via Flask-RESTful)
+Authentication & Security:
+Flask-Security-Too (User management, Roles)
+Flask-Bcrypt & Argon2 (Password Hashing)
+Flask-Cors (Cross-Origin Resource Sharing)
+Database ORM: SQLAlchemy (via Flask-SQLAlchemy)
+Asynchronous Tasks: Celery (Background job processing)
+Caching & Message Broker: Redis (via flask-caching and as Celery broker)
+
+
+Database
+Development: SQLite
+Production Capable: PostgreSQL (indicated by psycopg2-binary)
+AI & Integrations
+LLM Providers: OpenAI (openai), Google Gemini (google-generativeai)
+Vector Database: Pinecone (pinecone - likely for RAG/Knowledge base)
+Voice/Audio: ElevenLabs (elevenlabs - Text-to-Speech)
+Utilities: faker (Data seeding), email-validator
+DevOps & Deployment
+Containerization: Docker
+WSGI Server: Gunicorn (for production serving)
+Environment Management: python-dotenv
