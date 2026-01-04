@@ -123,7 +123,7 @@ onMounted(() => {
   // Start flapping animation
   wingInterval = setInterval(() => {
     wingState.value = wingState.value === 'up' ? 'down' : 'up';
-  }, 800); // Flap every 200ms
+  }, 1000); // Flap every 200ms
 
   // Show intro for 4 seconds then fade it out
   setTimeout(() => {
