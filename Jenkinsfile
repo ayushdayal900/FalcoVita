@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    triggers {
+        pollSCM('H/5 * * * *')  // polls GitHub every 5 minutes
+    }
+
     stages {
 
         // clone the repository
@@ -10,23 +14,6 @@ pipeline {
             }
         }
 
-        // install frontend dependencies
-        stage('Install Frontend Dependencies') {
-            steps {
-                dir('frontend') {
-                    sh 'npm install'
-                }
-            }
-        }
-
-        // install backend dependencies
-        stage('Install Backend Dependencies') {
-            steps {
-                dir('backend') {
-                    sh 'pip install -r requirements.txt'
-                }
-            }
-        }
 
         // build all docker images via docker-compose
         stage('Build Docker Images') {
