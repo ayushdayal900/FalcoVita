@@ -1,12 +1,14 @@
 FROM python:3.9-slim
 
 WORKDIR /app
+RUN mkdir backend
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./backend/
+RUN pip install --no-cache-dir -r ./backend/requirements.txt
 
-COPY . .
+COPY . ./backend/
 
 EXPOSE 5000
 
-CMD ["python", "-m","backend.app"]
+ENV PYTHONPATH=/app
+CMD ["python", "-m", "backend.app"]

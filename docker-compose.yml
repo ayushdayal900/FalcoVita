@@ -11,7 +11,7 @@ services:
       - SMTP_SERVER=mailhog
       - SMTP_PORT=1025
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
     depends_on:
       - redis
       - mailhog
