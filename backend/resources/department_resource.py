@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from flask_restful import Resource, Api
+from flask_security import auth_required, roles_accepted
 from backend.models import Department, Doctor
 from backend.extensions import db, cache
 
@@ -8,6 +9,7 @@ department_api = Api(department_bp)
 
 
 class DepartmentListResource(Resource):
+    @auth_required('token', 'session')
     @cache.cached(timeout=600)
     def get(self):
         """Get all departments with doctor count"""
@@ -23,6 +25,8 @@ class DepartmentListResource(Resource):
         
         return result, 200
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def post(self):
         """Create new department"""
         data = request.get_json()
@@ -48,6 +52,7 @@ class DepartmentListResource(Resource):
 
 
 class DepartmentResource(Resource):
+    @auth_required('token', 'session')
     def get(self, id):
         """Get single department with doctors"""
         dept = Department.query.filter_by(id=id).first()
@@ -60,6 +65,8 @@ class DepartmentResource(Resource):
         
         return result, 200
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def put(self, id):
         """Update department"""
         dept = Department.query.filter_by(id=id).first()
@@ -74,6 +81,8 @@ class DepartmentResource(Resource):
         cache.delete_memoized(DepartmentListResource.get)
         return dept.to_dict(), 200
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def delete(self, id):
         """Delete department"""
         dept = Department.query.filter_by(id=id).first()

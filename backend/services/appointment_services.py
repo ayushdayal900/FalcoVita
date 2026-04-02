@@ -17,15 +17,39 @@ class AppointmentService:
     # LIST all appointments
     # ----------------------------------------
     @staticmethod
-    def get_all():
+    def get_all(limit=None, offset=None, doctor_id=None, patient_id=None, status=None, start_date=None, end_date=None):
         from sqlalchemy.orm import joinedload
-        appointments = Appointment.query.options(
+        query = Appointment.query.options(
             joinedload(Appointment.patient).joinedload(Patient.user),
             joinedload(Appointment.doctor).joinedload(Doctor.user),
             joinedload(Appointment.department)
-        ).all()
-        if not appointments:
-            raise ServiceError("No appointments found")
+        )
+        
+        if doctor_id:
+            query = query.filter(Appointment.doctor_id == doctor_id)
+        if patient_id:
+            query = query.filter(Appointment.patient_id == patient_id)
+        if status:
+            query = query.filter(Appointment.status == status)
+        if start_date:
+            try:
+                sd = datetime.fromisoformat(start_date)
+                query = query.filter(Appointment.appointment_date >= sd)
+            except ValueError:
+                pass
+        if end_date:
+            try:
+                ed = datetime.fromisoformat(end_date)
+                query = query.filter(Appointment.appointment_date <= ed)
+            except ValueError:
+                pass
+                
+        if offset is not None:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+            
+        appointments = query.all()
         return [a.to_dict() for a in appointments]
 
     # ----------------------------------------

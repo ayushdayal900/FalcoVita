@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
+from flask_security import auth_required, roles_accepted, current_user
 from backend.services import PatientHistoryService, ServiceError
 
 history_bp = Blueprint("history_bp", __name__, url_prefix="/api/history")
@@ -11,13 +12,29 @@ history_api = Api(history_bp)
 # DELETE /api/history/<id>
 # ------------------------------------
 class PatientHistoryResource(Resource):
+    @auth_required('token', 'session')
     def get(self, id):
         history = PatientHistoryService.get_by_id(id)
         if not history:
             return {"message": "History entry not found"}, 404
+            
+        if current_user.role == 'patient' and history.patient_id != current_user.id:
+            return {"message": "Forbidden"}, 403
+        if current_user.role == 'doctor' and history.doctor_id != current_user.id:
+            return {"message": "Forbidden"}, 403
+            
         return history.to_dict(), 200
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin', 'doctor')
     def put(self, id):
+        history = PatientHistoryService.get_by_id(id)
+        if not history:
+             return {"message": "History entry not found"}, 404
+             
+        if current_user.role == 'doctor' and history.doctor_id != current_user.id:
+             return {"message": "Forbidden: Only attending doctor can modify"}, 403
+             
         data = request.get_json()
         data["id"] = id
         try:
@@ -26,6 +43,8 @@ class PatientHistoryResource(Resource):
         except ServiceError as e:
             return {"message": str(e)}, 400
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def delete(self, id):
         try:
             PatientHistoryService.delete_by_id(id)
@@ -39,14 +58,22 @@ class PatientHistoryResource(Resource):
 # POST /api/history/
 # ------------------------------------
 class PatientHistoryListResource(Resource):
+    @auth_required('token', 'session')
+    @roles_accepted('admin', 'doctor')
     def get(self):
         try:
             return PatientHistoryService.get_all(), 200
         except ServiceError as e:
             return {"message": str(e)}, 404
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin', 'doctor')
     def post(self):
         data = request.get_json()
+        
+        if current_user.role == 'doctor':
+             data['doctor_id'] = current_user.id
+             
         try:
             history = PatientHistoryService.create(data)
             return history.to_dict(), 201
@@ -58,7 +85,11 @@ class PatientHistoryListResource(Resource):
 # GET /api/history/patient/<patient_id>
 # ------------------------------------
 class PatientHistoryByPatientResource(Resource):
+    @auth_required('token', 'session')
     def get(self, patient_id):
+        if current_user.role == 'patient' and patient_id != current_user.id:
+             return {"message": "Forbidden: Cannot view other patient histories"}, 403
+             
         try:
             return PatientHistoryService.get_by_patient(patient_id), 200
         except ServiceError as e:
@@ -66,7 +97,11 @@ class PatientHistoryByPatientResource(Resource):
 
 
 class PatientHistoryExportResource(Resource):
+    @auth_required('token', 'session')
     def get(self, patient_id):
+        if current_user.role == 'patient' and patient_id != current_user.id:
+            return {"message": "Forbidden"}, 403
+            
         from backend.models import PatientHistory, Prescription, Appointment, Patient
         from flask import make_response
         import csv

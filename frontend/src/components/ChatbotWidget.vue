@@ -109,7 +109,7 @@ import api from '@/services/api';
 const store = useStore();
 const isOpen = ref(false);
 const messages = ref([
-  { id: 1, sender: 'bot', text: 'Hi, I’m FalcoVita AI. I can help you manage appointments, patient history, records, doctors, and more — based on your role.' }
+  { id: 1, sender: 'bot', text: 'Hi, I’m FalcoVita AI. I can help you manage appointments, patient history, records, doctors, and more - based on your role.' }
 ]);
 
 const userInput = ref('');
@@ -171,7 +171,7 @@ const scrollToBottom = () => {
 };
 
 /* ---------------------------------------------------------------------
-   Send Message — FIXED URL + SAFE TEXT HANDLING
+   Send Message - FIXED URL + SAFE TEXT HANDLING
 --------------------------------------------------------------------- */
 const sendMessage = async (forcedText = null) => {
   let text = "";
@@ -305,7 +305,7 @@ const toggleSpeech = () => {
 
 
 <style scoped>
-/* YOUR ORIGINAL STYLING — UNTOUCHED */
+/* YOUR ORIGINAL STYLING - UNTOUCHED */
 .chatbot-wrapper {
   position: fixed;
   bottom: 20px;

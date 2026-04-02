@@ -14,23 +14,39 @@ class PatientService:
         return Patient.query.filter_by(id=id).first()
 
     @staticmethod
-    def get_all():
+    def get_all(limit=None, offset=None, search=None):
         from sqlalchemy.orm import joinedload
-        patients = Patient.query.options(joinedload(Patient.user), joinedload(Patient.billings)).all()
-        if not patients:
-            raise ServiceError("No patients found")
+        query = Patient.query.options(joinedload(Patient.user), joinedload(Patient.billings))
+        
+        if search:
+            query = query.join(User).filter(User.name.ilike(f'%{search}%'))
+            
+        if offset is not None:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+            
+        patients = query.all()
         return [patient.to_dict() for patient in patients]
 
     @staticmethod
-    def get_patients_for_doctor(doctor_id):
+    def get_patients_for_doctor(doctor_id, limit=None, offset=None, search=None):
         from backend.models import Appointment
         from sqlalchemy.orm import joinedload
         
-        # Query patients who have at least one appointment with the doctor
-        patients = Patient.query.join(Appointment).filter(
+        query = Patient.query.join(Appointment).filter(
             Appointment.doctor_id == doctor_id
-        ).options(joinedload(Patient.user)).distinct().all()
+        ).options(joinedload(Patient.user)).distinct()
         
+        if search:
+            query = query.join(User).filter(User.name.ilike(f'%{search}%'))
+            
+        if offset is not None:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
+            
+        patients = query.all()
         return [patient.to_dict() for patient in patients]
 
     @staticmethod

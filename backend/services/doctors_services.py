@@ -13,7 +13,7 @@ class DoctorService:
         return Doctor.query.filter_by(id=id).first()
 
     @staticmethod
-    def get_all(include_blocked=False, department_id=None):
+    def get_all(include_blocked=False, department_id=None, limit=None, offset=None, search=None):
         from sqlalchemy.orm import joinedload
         # Always use joinedload to eagerly load the user relationship
         query = Doctor.query.options(joinedload(Doctor.user), joinedload(Doctor.department))
@@ -24,6 +24,14 @@ class DoctorService:
             
         if department_id:
             query = query.filter(Doctor.department_id == department_id)
+            
+        if search:
+            query = query.join(User).filter(User.name.ilike(f'%{search}%'))
+            
+        if offset is not None:
+            query = query.offset(offset)
+        if limit is not None:
+            query = query.limit(limit)
             
         doctors = query.all()
         return [doctor.to_dict() for doctor in doctors]

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, send_file
 from flask_restful import Resource, Api
+from flask_security import auth_required, roles_accepted, current_user
 from backend.models import PatientHistory, Prescription, Patient, Doctor, Appointment
 import csv
 import io
@@ -10,8 +11,12 @@ export_api = Api(export_bp)
 
 
 class ExportPatientHistoryResource(Resource):
+    @auth_required('token', 'session')
     def get(self, patient_id):
         """Export patient history as CSV"""
+        if current_user.role == 'patient' and patient_id != current_user.id:
+            return {"message": "Forbidden"}, 403
+            
         from backend.models import User
         
         # Verify user exists
@@ -84,6 +89,8 @@ class ExportPatientHistoryResource(Resource):
 
 
 class ExportAllAppointmentsResource(Resource):
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def get(self):
         """Export all appointments as CSV (Admin only)"""
         

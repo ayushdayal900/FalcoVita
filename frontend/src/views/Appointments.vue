@@ -245,7 +245,7 @@
                 >
                   <option value="" disabled>Choose a doctor...</option>
                   <option v-for="doc in doctors" :key="doc.id" :value="doc.id">
-                    Dr. {{ doc.user?.name }} — {{ doc.specialization }}
+                    Dr. {{ doc.user?.name }} - {{ doc.specialization }}
                   </option>
                 </select>
               </div>
@@ -260,7 +260,7 @@
                 >
                   <option value="" disabled>Select a time slot...</option>
                   <option v-for="slot in availableSlots" :key="slot.id" :value="slot.id">
-                    {{ new Date(slot.available_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) }} — {{ slot.time_slot }}
+                    {{ new Date(slot.available_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) }} - {{ slot.time_slot }}
                   </option>
                 </select>
                 

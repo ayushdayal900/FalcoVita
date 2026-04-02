@@ -8,7 +8,7 @@ billing_bp = Blueprint("billing_bp", __name__, url_prefix="/api/billing")
 billing_api = Api(billing_bp)
 
 class BillingListResource(Resource):
-    @auth_required()
+    @auth_required('token', 'session')
     def get(self):
         """Get all bills (Admin) or My Bills (Patient)"""
         try:
@@ -21,7 +21,7 @@ class BillingListResource(Resource):
         except ServiceError as e:
              return {"message": str(e)}, 400
 
-    @auth_required()
+    @auth_required('token', 'session')
     @roles_accepted('admin')
     def post(self):
         """Create a new bill (Admin only)"""
@@ -33,12 +33,18 @@ class BillingListResource(Resource):
             return {"message": str(e)}, 400
 
 class PaymentResource(Resource):
-    @auth_required()
+    @auth_required('token', 'session')
     def post(self, billing_id):
         """Make a payment for a specific bill"""
-        data = request.get_json()
         try:
-            # In a real app, verify user owns this bill
+            bill = BillingService.get_by_id(billing_id)
+            if not bill:
+                return {"message": "Bill not found"}, 404
+                
+            if current_user.role == 'patient' and bill.patient_id != current_user.id:
+                return {"message": "Forbidden"}, 403
+                
+            data = request.get_json()
             payment = BillingService.process_payment(billing_id, data)
             return payment.to_dict(), 201
         except ServiceError as e:

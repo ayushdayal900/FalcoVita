@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from flask_restful import Resource, Api
+from flask_security import auth_required, roles_accepted, current_user
 from backend.services import DoctorService, ServiceError
 from backend.extensions import cache
 
@@ -8,6 +9,7 @@ doctor_api = Api(doctor_bp)
 
 
 class DoctorResource(Resource):
+    @auth_required('token', 'session')
     @cache.cached(timeout=300)
     def get(self, id):
         doctor = DoctorService.get_by_id(id)
@@ -15,8 +17,13 @@ class DoctorResource(Resource):
             return {"message": "Doctor not found"}, 404
         return doctor.to_dict(), 200
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin', 'doctor')
     def put(self, id):
         """Full update"""
+        if current_user.role == 'doctor' and current_user.id != id:
+            return {"message": "Forbidden"}, 403
+            
         data = request.get_json()
         data["id"] = id
 
@@ -28,8 +35,13 @@ class DoctorResource(Resource):
         except ServiceError as e:
             return {"message": str(e)}, 400
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin', 'doctor')
     def patch(self, id):
         """Partial update"""
+        if current_user.role == 'doctor' and current_user.id != id:
+            return {"message": "Forbidden"}, 403
+            
         data = request.get_json()
         data["id"] = id
 
@@ -41,6 +53,8 @@ class DoctorResource(Resource):
         except ServiceError as e:
             return {"message": str(e)}, 400
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def delete(self, id):
         try:
             DoctorService.delete_by_id(id)
@@ -55,6 +69,8 @@ class DoctorResource(Resource):
 # GET doctor by email
 # ---------------------------
 class DoctorByEmailResource(Resource):
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def get(self, email):
         user = DoctorService.get_by_email(email)  # returns User
         if not user or not user.doctor:
@@ -72,16 +88,30 @@ class DoctorByEmailResource(Resource):
 # ---------------------------
 class DoctorListResource(Resource):
 
+    @auth_required('token', 'session')
+    @cache.cached(timeout=60, query_string=True)
     def get(self):
         """Get all doctors"""
         try:
             include_blocked = request.args.get('include_blocked', 'false').lower() == 'true'
             department_id = request.args.get('department_id')
-            doctors = DoctorService.get_all(include_blocked=include_blocked, department_id=department_id)
+            limit = request.args.get('limit', type=int)
+            offset = request.args.get('offset', type=int)
+            search = request.args.get('search')
+            
+            doctors = DoctorService.get_all(
+                include_blocked=include_blocked, 
+                department_id=department_id,
+                limit=limit,
+                offset=offset,
+                search=search
+            )
             return doctors, 200
         except ServiceError as e:
             return {"message": str(e)}, 404
 
+    @auth_required('token', 'session')
+    @roles_accepted('admin')
     def post(self):
         """Create new doctor (user + doctor table)"""
         data = request.get_json()

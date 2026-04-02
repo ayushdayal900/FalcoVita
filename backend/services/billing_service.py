@@ -4,6 +4,10 @@ from datetime import datetime, timezone
 from backend.services.service_errors import ServiceError
 
 class BillingService:
+    @staticmethod
+    def get_by_id(billing_id):
+        return Billing.query.get(billing_id)
+
     
     @staticmethod
     def get_all():
