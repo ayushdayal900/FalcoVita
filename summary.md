@@ -32,9 +32,10 @@ The application employs a robust, scalable backend architecture, strictly adheri
 | **Database** | SQLite & SQLAlchemy | Relational persistence. Programmatically structured via ORM for seamless migration to PostgreSQL in production. |
 | **Caching Layer** | Redis | Reduces DB load for frequently accessed, non-volatile data (e.g., Doctors, Departments) using TTL policies. |
 | **Task Queues** | Celery + Redis | Decouples expensive operations from the HTTP cycle to handle automated scheduling and CSV generation cleanly. |
+| **Email Service** | MailHog (SMTP) | A development-mode SMTP interceptor that captures all outbound emails (appointment reminders, monthly reports) sent by Celery workers. Exposes a web UI at port `8025` to inspect emails without delivering them to real inboxes — ensuring zero accidental emails during testing. |
 
 > [!WARNING]
-> **Production Parity:** The inclusion of Redis and Celery elevates this architecture from a simple CRUD API into a production-grade backend capable of sustaining high-concurrency loads and heavy background processing.
+> **Production Parity:** The inclusion of ***Redis, Celery, and MailHog*** elevates this architecture from a simple CRUD API into a production-grade backend capable of sustaining high-concurrency loads, heavy background processing, and safe transactional email delivery — all orchestrated together via Docker Compose.
 
 ---
 
@@ -44,155 +45,9 @@ The application features a normalized, deeply interconnected schema. Data integr
 
 ### Schema Visualization (ER Diagram)
 
-```mermaid
-erDiagram
-    USER ||--o| DOCTOR : "has profile"
-    USER ||--o| PATIENT : "has profile"
-    USER ||--o{ CHAT_MESSAGE : "sends"
-    USER ||--o{ ESCALATION_TICKET : "requests"
-    ROLE ||--o{ USER_ROLES : "assigned to"
-    USER ||--o{ USER_ROLES : "has"
-    
-    DEPARTMENT ||--o{ DOCTOR : "employs"
-    DEPARTMENT ||--o{ APPOINTMENT : "hosts"
-    DEPARTMENT ||--o{ PATIENT_HISTORY : "tracks"
-    
-    DOCTOR ||--o{ AVAILABILITY_SLOT : "manages"
-    DOCTOR ||--o{ APPOINTMENT : "performs"
-    DOCTOR ||--o{ PATIENT_HISTORY : "writes"
-    DOCTOR ||--o{ PATIENT : "treats"
-    DOCTOR ||--o{ FEEDBACK : "receives"
-    
-    PATIENT ||--o{ APPOINTMENT : "books"
-    PATIENT ||--o{ PATIENT_HISTORY : "has"
-    PATIENT ||--o{ BILLING : "receives"
-    PATIENT ||--o{ FEEDBACK : "submits"
-    
-    APPOINTMENT ||--o| PATIENT_HISTORY : "generates"
-    APPOINTMENT ||--o| BILLING : "triggers"
-    APPOINTMENT ||--o| FEEDBACK : "rated in"
-    
-    PATIENT_HISTORY ||--o{ PRESCRIPTION : "contains"
-    BILLING ||--o{ PAYMENT : "collects"
 
-    USER {
-        integer id PK
-        string name
-        string email
-        string password
-        string role
-        string contact_number
-        boolean blacklisted
-        string fs_uniquifier
-        boolean active
-        timestamp created_at
-        timestamp updated_at
-    }
 
-    ROLE {
-        integer id PK
-        string name
-        string description
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    USER_ROLES {
-        integer id PK
-        integer user_id FK
-        integer role_id FK
-    }
-
-    DOCTOR {
-        integer id PK
-        integer department_id FK
-        string specialization
-        string qualifications
-        integer experience
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    PATIENT {
-        integer id PK
-        timestamp dob
-        string contact
-        string medical_record_number
-        integer doctor_id FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    DEPARTMENT {
-        integer id PK
-        string name
-        string overview
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    APPOINTMENT {
-        integer id PK
-        integer patient_id FK
-        integer doctor_id FK
-        integer department_id FK
-        timestamp appointment_date
-        string status
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    PATIENT_HISTORY {
-        integer id PK
-        integer patient_id FK
-        integer doctor_id FK
-        integer department_id FK
-        integer appointment_id FK
-        string visit_type
-        timestamp visit_date
-        string diagnosis
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    PRESCRIPTION {
-        integer id PK
-        integer history_id FK
-        string medicines
-        string dosage
-        string instructions
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    AVAILABILITY_SLOT {
-        integer id PK
-        integer doctor_id FK
-        timestamp available_date
-        string time_slot
-        enum status
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    BILLING {
-        integer id PK
-        integer patient_id FK
-        integer appointment_id FK
-        float total_amount
-        string status
-        timestamp due_date
-    }
-
-    PAYMENT {
-        integer id PK
-        integer billing_id FK
-        float amount_paid
-        timestamp payment_date
-        string payment_method
-        string transaction_id
-    }
-```
+![ER Diagram](./Picture1.png)
 
 Here is how it maps to a "Finance Data Processing" system:
 
@@ -255,11 +110,12 @@ The assignment requires filtering records by **date, category, and type**.
 
 ---
 
-## 7. Advanced Asynchronous Processing (Celery & Redis)
+## 7. Advanced Asynchronous Processing (Celery, Redis & MailHog)
 To demonstrate senior-level backend design, this project intentionally offloads blocking I/O tasks to background workers.
 
 *   **Daily Reminders (Cron Job):** A Celery Beat scheduler scans the database every morning for `Date == Today` and executes external API POST requests to notify patients.
 *   **Monthly Batch Reports:** Aggregates massive amounts of transactional data, uses Jinja2 to render a formatted HTML report, and dispatches it via SMTP.
+*   **MailHog (SMTP Interceptor):** All emails generated by Celery workers (reminders, reports) are routed through **MailHog** — a lightweight, zero-configuration SMTP server designed for development. It captures every outbound email and makes it inspectable via a browser-based UI (`http://localhost:8025`), completely preventing accidental delivery to real users. The backend's `SMTP_SERVER=mailhog` and `SMTP_PORT=1025` environment variables in `docker-compose.yml` wire MailHog seamlessly into the Celery email pipeline.
 
 ---
 
@@ -276,26 +132,13 @@ A critical assignment requirement is "Validation and Error Handling."
 
 *   **Admin is Pre-Seeded:** The system does not expose a public admin registration endpoint to prevent escalation attacks.
 *   **SQLite vs. PostgreSQL:** SQLite was intentionally chosen for simplicity during development/evaluation. The SQLAlchemy ORM abstraction makes migrating to PostgreSQL seamless.
-*   **Celery vs. Threads:** Celery adds operational Redis overhead, but provides proper task queuing and retries-a production-grade tradeoff over native Python threads.
+*   **Celery vs. Threads:** Celery adds operational Redis overhead, but provides proper task queuing and retries — a production-grade tradeoff over native Python threads.
 *   **JWT vs. Sessions:** Supports both models to demonstrate awareness of stateful vs. stateless tradeoffs.
+*   **MailHog vs. Real SMTP:** MailHog (`mailhog/mailhog` Docker image) is used as a local SMTP interceptor instead of a live provider (e.g., SendGrid, AWS SES). This is a deliberate development/testing tradeoff — it completely eliminates the risk of accidental email delivery to real users during evaluation, while keeping the full Celery → SMTP pipeline intact and verifiable. Swapping to a production SMTP provider requires only changing two environment variables: `SMTP_SERVER` and `SMTP_PORT`.
 
 ---
 
-## 10. Official Assignment Submission Template
-
-*(The following text can be copied directly into the Zorvyn assignment portal field)*
-
-**Subject:** Submission: Finance Data Processing and Access Control Backend (Alternative Project)
-
-**Dear Evaluation Team,**
-
-I am submitting my existing backend project, the **FalcoVita Hospital Management System**, for evaluation. As per the assignment instructions allowing for similar past projects, I am sharing an application that strictly matches the backend engineering, architectural, and business logic requirements of the "Finance Data Processing and Access Control Backend."
-
-While the domain of this project is Healthcare Logistics rather than Financial Ledgers, the underlying architectural requirements-Relational Data Modeling, Role-Based Access Control (RBAC), Dashboard Aggregations, and Data Validation-are functionally identical.
-
----
-
-## **API Reference (Systematic)**
+## 10. **API Reference (Systematic)**
 
 The following is a systematic, blueprint-grouped reference of REST endpoints implemented in the FalcoVita backend. Each blueprint lists common endpoints (method + path) and a brief note about auth and behavior.
 
@@ -388,26 +231,51 @@ The following is a systematic, blueprint-grouped reference of REST endpoints imp
 
 ---
 
-### **Here is how FalcoVita maps perfectly to the assignment's Core Requirements:**
+### 11. **Here is how FalcoVita maps perfectly to the assignment's Core Requirements:**
 
 **1. User and Role Management**
 
+The HMS implements a full multi-role user system with three distinct roles: **Admin**, **Doctor (Analyst)**, and **Patient (Viewer)**. Roles are persisted in a dedicated `roles` table and linked to users via a `user_roles` join table — an industry-standard approach. Registration (`POST /api/auth/register`) enforces role-specific data validation (e.g., a Doctor registration requires `specialization` and `department_id`; a Patient requires `dob`). Admin accounts are pre-seeded at startup and never exposed through a public registration endpoint, preventing privilege escalation. The `blacklisted` flag on the `User` model provides soft-suspension without data deletion, returning `403 Forbidden` on all subsequent login attempts.
+
 **2. Financial Records Management**
+
+The HMS manages the complete lifecycle of financial-equivalent records. `Appointments` serve as **pending transactions** — created, updated, and cancelled with full audit trails. Once an appointment is completed, an immutable `PatientHistory` record (the **finalized ledger**) is generated. The `Billing` model represents **accounts receivable**, tracking `total_amount`, `status` (pending/paid/overdue), and `due_date`. `Payment` records capture individual capital inflow events with `payment_method` and `transaction_id`. All data mutations are logged with `created_at` / `updated_at` timestamps, providing a complete audit trail equivalent to a double-entry bookkeeping ledger.
 
 **3. Dashboard Summary APIs**
 
+The backend exposes a dedicated analytics blueprint with role-scoped aggregation endpoints:
+- **`GET /api/analytics/dashboard`** — Admin KPIs: total registered users, active doctors, scheduled appointments, and upcoming-today counts using efficient SQL `COUNT()` queries.
+- **`GET /api/analytics/appointments`** — Appointment trend analysis grouped by week (`STRFTIME('%W', date)`) and month, serving time-series chart data to the frontend.
+- **`GET /api/analytics/financial`** — Financial analytics: total revenue collected, outstanding receivables, and overdue billing amounts (Admin only).
+- **`GET /api/analytics/demographics`** — Patient demographics aggregation by age bracket and assigned department (Admin only).
+- **`GET /api/feedback/stats`** — Aggregated doctor performance ratings per department.
+
 **4. Access Control Logic**
+
+Every route is protected by a layered RBAC model:
+- **Authentication gate** (`@auth_required('token', 'session')`): Rejects unauthenticated requests with `401 Unauthorized`.
+- **Role gate** (`@roles_accepted('admin', 'doctor')`): Rejects insufficient-privilege requests with `403 Forbidden`.
+- **Data-level scoping** (`current_user` checks): Even within the same role, users can only access their own records. A Doctor calling `GET /api/patients/` receives only their assigned patients; a Patient calling `GET /api/appointments/` receives only their own bookings. This prevents horizontal privilege escalation — a common security gap in naive RBAC implementations.
+- **Admin bypass**: The seeded admin user is configured at startup and excluded from public modification endpoints.
 
 **5. Validation and Error Handling**
 
-### Project Links
+The backend enforces strict, multi-layer validation with semantically correct HTTP status codes:
+- **`400 Bad Request`** — Missing required fields in request body (e.g., missing `doctor_id` when booking an appointment).
+- **`401 Unauthorized`** — Invalid or expired JWT token / unauthenticated session.
+- **`403 Forbidden`** — Authenticated user lacks the required role, or attempts to access another user's data.
+- **`404 Not Found`** — Referenced resource (Doctor, Patient, Appointment) does not exist.
+- **`409 Conflict`** — Doctor scheduling overlap: before inserting a new appointment, the API queries existing slots to ensure no time collision exists for the same doctor on the same date.
+- **State Machine Enforcement**: Patients cannot revert a `Completed` appointment to `Cancelled`. Doctors cannot mark a future-dated appointment as `Completed`. Invalid state transitions return `400` with a descriptive error message.
+
+### 12. Project Links
 
 - Live Frontend: https://falcovita.vercel.app  
 - Live Backend API: https://falcovita.onrender.com  
 - GitHub Repository: https://github.com/ayushdayal900/FalcoVita  
 - Google Drive (All Files): https://drive.google.com/drive/folders/1-nG9zi3PlUGtEGe3-Bp3egTkAoSp5bcW  
 - Demo Video: https://drive.google.com/file/d/1Zvcfz0YRhgLIhH5doMk73MUpNT5e2-YV/view  
-- Report: https://drive.google.com/file/d/1K1Ue8f4Gxdsnm0EchUUlJ_04IUTfFghy/view  
+- IITM Report: https://drive.google.com/file/d/1K1Ue8f4Gxdsnm0EchUUlJ_04IUTfFghy/view  
 
 
 
