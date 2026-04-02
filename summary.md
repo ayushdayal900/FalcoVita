@@ -245,13 +245,13 @@ The backend validates logic and securely bridges the application layers natively
 
 ### Filtering & Search (`GET` Request Parameters)
 The assignment requires filtering records by **date, category, and type**. 
-*   **`?start_date=2025-10-15`** - Returns appointments beginning from a specific date.
-*   **`?status=Completed`** - Filters by appointment lifecycle state.
-*   **`?search=Neurology`** - Filters service providers via SQL `LIKE` wildcard search.
-*   **`?start_date=2025-01-01&end_date=2025-03-31`** - Date-range boundaries for period-specific reporting.
+*   **?start_date=2025-10-15** - Returns appointments beginning from a specific date.
+*   **?status=Completed** - Filters by appointment lifecycle state.
+*   **?search=Neurology** - Filters service providers via SQL `LIKE` wildcard search.
+*   **?start_date=2025-01-01&end_date=2025-03-31** - Date-range boundaries for period-specific reporting.
 
 ### Async Triggers
-*   **GET `/api/export/patient-history/<id>`**: Triggers a deep-join database aggregation into an exportable CSV spreadsheet for a specific patient.
+*   **GET /api/export/patient-history/<id>**: Triggers a deep-join database aggregation into an exportable CSV spreadsheet for a specific patient.
 
 ---
 
@@ -292,25 +292,6 @@ A critical assignment requirement is "Validation and Error Handling."
 I am submitting my existing backend project, the **FalcoVita Hospital Management System**, for evaluation. As per the assignment instructions allowing for similar past projects, I am sharing an application that strictly matches the backend engineering, architectural, and business logic requirements of the "Finance Data Processing and Access Control Backend."
 
 While the domain of this project is Healthcare Logistics rather than Financial Ledgers, the underlying architectural requirements-Relational Data Modeling, Role-Based Access Control (RBAC), Dashboard Aggregations, and Data Validation-are functionally identical.
-
-Here is how FalcoVita maps perfectly to the assignment's Core Requirements:
-
-### 1. User and Role Management
-
-### 2. Financial Records Management
-
-### 3. Dashboard Summary APIs
-
-### 4. Access Control Logic
-
-### 5. Validation and Error Handling
-
-### Project Links
-
-Thank you for your time and consideration.
-
-Best regards,
-
 
 ---
 
@@ -397,11 +378,45 @@ The following is a systematic, blueprint-grouped reference of REST endpoints imp
 - GET /api/analytics/appointments - Appointment trend analytics (admin, doctor).
 - GET /api/analytics/financial - Financial analytics (admin only).
 
+---
+
 **Common notes**
 - Auth: Most endpoints require `Authorization: Bearer <token>` or session authentication. Use `/api/auth/login` to obtain a token.
 - RBAC: Endpoints use `@auth_required('token','session')` and `@roles_accepted(...)` or `current_user` checks to enforce role-scoped access.
 - Caching: Several list endpoints are cached and invalidate cache on writes (`cache.delete_memoized`).
 - Exports: CSV exports return `text/csv` attachments built server-side.
 
+---
+
+### **Here is how FalcoVita maps perfectly to the assignment's Core Requirements:**
+
+**1. User and Role Management**
+
+**2. Financial Records Management**
+
+**3. Dashboard Summary APIs**
+
+**4. Access Control Logic**
+
+**5. Validation and Error Handling**
+
+### Project Links
+
+- Live Frontend: https://falcovita.vercel.app  
+- Live Backend API: https://falcovita.onrender.com  
+- GitHub Repository: https://github.com/ayushdayal900/FalcoVita  
+- Google Drive (All Files): https://drive.google.com/drive/folders/1-nG9zi3PlUGtEGe3-Bp3egTkAoSp5bcW  
+- Demo Video: https://drive.google.com/file/d/1Zvcfz0YRhgLIhH5doMk73MUpNT5e2-YV/view  
+- Report: https://drive.google.com/file/d/1K1Ue8f4Gxdsnm0EchUUlJ_04IUTfFghy/view  
+
+
+
+
+---
+
+
+Thank you for your time and consideration.
+
+Best regards,
 **Ayush Dayal**
 ayushdayal8@gmail.com
