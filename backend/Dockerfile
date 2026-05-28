@@ -1,14 +1,20 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 WORKDIR /app
-RUN mkdir backend
 
-COPY requirements.txt ./backend/
-RUN pip install --no-cache-dir -r ./backend/requirements.txt
+# Install dependencies first for caching
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
-COPY . ./backend/
+# Copy backend code
+COPY backend ./backend
+
+# The app is run as a module so we need /app in PYTHONPATH
+ENV PYTHONPATH=/app
+ENV FLASK_APP=backend.app
+ENV FLASK_ENV=development
 
 EXPOSE 5000
 
-ENV PYTHONPATH=/app
+# Default command for the backend API
 CMD ["python", "-m", "backend.app"]

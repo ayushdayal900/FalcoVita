@@ -1,59 +1,195 @@
-version: '3.8'
+# version: '3.8'
+
+# -----------------------------------
+# Common Environment Variables
+# -----------------------------------
+
+x-common-env: &common-env
+  FLASK_ENV: development
+
+  # Security
+  SECRET_KEY: ${SECRET_KEY}
+  SECURITY_PASSWORD_SALT: ${SECURITY_PASSWORD_SALT}
+
+  # Database
+  DATABASE_URL: ${DATABASE_URL}
+
+  # Redis / Celery
+  REDIS_URL: redis://redis:6379/0
+  CELERY_BROKER_URL: redis://redis:6379/0
+  CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+  # Mail
+  SMTP_SERVER: mailhog
+  SMTP_PORT: 1025
+  SMTP_EMAIL: noreply@hospital.com
+  SMTP_PASSWORD: ${SMTP_PASSWORD}
+
+  # Integrations
+  GOOGLE_CHAT_WEBHOOK_URL: ${GOOGLE_CHAT_WEBHOOK_URL}
+
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+  PINECONE_API_KEY: ${PINECONE_API_KEY}
+  ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+
 
 services:
+
+  # -----------------------------------
+  # Backend
+  # -----------------------------------
+
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+
+    container_name: falcovita_backend
+
+    restart: unless-stopped
+
     ports:
       - "5000:5000"
+
     environment:
-      - REDIS_URL=redis://redis:6379/0
-      - FLASK_ENV=development
-      - SMTP_SERVER=mailhog
-      - SMTP_PORT=1025
-    volumes:
-      - ./backend:/app/backend
+      <<: *common-env
+
     depends_on:
       - redis
-      - mailhog
+
+    networks:
+      - falcovita_network
+
+
+  # -----------------------------------
+  # Celery Worker
+  # -----------------------------------
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+
+    container_name: falcovita_celery_worker
+
+    restart: unless-stopped
+
+    command: celery -A backend.celery_config.celery_app worker --loglevel=info
+
+    environment:
+      <<: *common-env
+
+    depends_on:
+      - redis
+
+    networks:
+      - falcovita_network
+
+
+  # -----------------------------------
+  # Celery Beat
+  # -----------------------------------
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+
+    container_name: falcovita_celery_beat
+
+    restart: unless-stopped
+
+    command: celery -A backend.celery_config.celery_app beat --loglevel=info
+
+    environment:
+      <<: *common-env
+
+    depends_on:
+      - redis
+
+    networks:
+      - falcovita_network
+
+
+  # -----------------------------------
+  # Frontend
+  # -----------------------------------
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: falcovita_frontend
+
+    restart: unless-stopped
+
     ports:
       - "80:80"
+
     depends_on:
       - backend
 
+    networks:
+      - falcovita_network
+
+
+  # -----------------------------------
+  # Redis
+  # -----------------------------------
+
   redis:
-    image: "redis:alpine"
+    image: redis:7-alpine
+
+    container_name: falcovita_redis
+
+    restart: unless-stopped
+
     ports:
       - "6379:6379"
 
+    volumes:
+      - redis_data:/data
+
+    networks:
+      - falcovita_network
+
+
+  # -----------------------------------
+  # Mailhog
+  # -----------------------------------
+
+  
   mailhog:
-    image: "mailhog/mailhog"
+    image: mailhog/mailhog
+
+    container_name: falcovita_mailhog
+
+    restart: unless-stopped
+
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "1026:1025"
+      - "8026:8025"
 
-  celery_worker:
-    build: ./backend
-    command: celery -A backend.celery_config.celery_app worker --loglevel=info
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - SMTP_SERVER=mailhog
-      - SMTP_PORT=1025
-    depends_on:
-      - redis
-      - backend
-      - mailhog
+    networks:
+      - falcovita_network
 
-  celery_beat:
-    build: ./backend
-    command: celery -A backend.celery_config.celery_app beat --loglevel=info
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - SMTP_SERVER=mailhog
-      - SMTP_PORT=1025
-    depends_on:
-      - redis
-      - backend
+
+
+
+# -----------------------------------
+# Volumes
+# -----------------------------------
+
+volumes:
+  redis_data:
+
+
+# -----------------------------------
+# Networks
+# -----------------------------------
+
+networks:
+  falcovita_network:
+    driver: bridge
 

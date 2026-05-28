@@ -29,7 +29,7 @@ class User(BaseModel, UserMixin):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(255), nullable=False)
-    contact_number = db.Column(db.String(15), nullable=True)
+    contact_number = db.Column(db.String(50), nullable=True)
     blacklisted = db.Column(db.Boolean, default=False)
 
     # One-to-one with Doctor & Patient
@@ -128,7 +128,7 @@ class Patient(BaseModel):
 
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     dob = db.Column(db.DateTime(timezone=True), nullable=False)
-    contact = db.Column(db.String(15), unique=True, nullable=False)
+    contact = db.Column(db.String(50), unique=True, nullable=False)
     medical_record_number = db.Column(db.String(100), unique=True, nullable=False)
     gender = db.Column(db.String(10), default='Other', nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))

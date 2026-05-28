@@ -50,26 +50,42 @@ Follow these instructions to set up and run the project locally.
 ### Backend Setup
 
 1.  **Navigate to the project root.**
-2.  **Install dependencies:**
+2.  **Create and activate a Python virtual environment** (recommended):
     ```bash
-    pip install -r backend/requirements.txt
+    python -m venv .venv
+    source .venv/bin/activate
     ```
-3.  **Start Redis Server:**
-    Ensure your Redis server is running (usually `redis-server`).
-4.  **Start Mailhog:**
+3.  **Install dependencies:**
+    ```bash
+    python -m pip install --upgrade pip
+    python -m pip install -r backend/requirements.txt
+    ```
+4.  **Start Redis Server:**
+    Install Redis and start it locally.
+    ```bash
+    sudo apt update
+    sudo apt install redis-server
+    sudo service redis-server start
+    redis-cli ping
+    ```
+    If you only need the client:
+    ```bash
+    sudo apt install redis-tools
+    ```
+5.  **Start Mailhog:**
     Download and run the Mailhog executable.
     -   **SMTP Server**: `localhost:1025`
     -   **Web UI**: `http://localhost:8025`
-5.  **Start Celery Worker:**
+6.  **Start Celery Worker:**
     ```bash
-    celery -A backend.app.celery worker --loglevel=info
+    python -m celery -A backend.app.celery worker --loglevel=info
     ```
-6.  **Start Celery Beat (for scheduled tasks):**
+7.  **Start Celery Beat (for scheduled tasks):**
     ```bash
-    celery -A backend.app.celery beat --loglevel=info
+    python -m celery -A backend.app.celery beat --loglevel=info
     ```
     *This scheduler triggers daily reminders via Google Chat or Email.*
-7.  **Run the Flask Application:**
+8.  **Run the Flask Application:**
     ```bash
     python -m backend.app
     ```
@@ -107,10 +123,10 @@ redis-cli -n 1 GET "/path"
 mailhog
 
 # Start Celery Worker
-celery -A backend.app.celery worker --loglevel=info
+python -m celery -A backend.app.celery worker --loglevel=info
 
 # Start Celery Beat
-celery -A backend.app.celery beat --loglevel=info
+python -m celery -A backend.app.celery beat --loglevel=info
 ```
 
 ### Application Run Commands

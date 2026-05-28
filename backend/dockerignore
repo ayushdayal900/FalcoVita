@@ -1,0 +1,78 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# SQLite / local databases
+*.db
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Cache / temp
+.cache/
+pytest_cache/
+.mypy_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+Dockerfile*
+docker-compose.yml
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Node modules (if frontend exists inside project)
+node_modules/
+
+# Tests
+tests/
+coverage/
+
+# Uploaded/generated files
+uploads/
+media/
+tmp/
+
+# Python tooling
+.pytest_cache/
+.tox/
+
+# AWS / credentials
+*.pem
+.aws/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Celery
+celerybeat-schedule
+
+# Local scripts cache
+scripts/__pycache__/
+resources/__pycache__/
+services/__pycache__/

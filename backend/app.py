@@ -39,7 +39,13 @@ def create_app():
         app.config.from_object(ProductionConfig)
     else:
         app.config.from_object(DevelopmentConfig)
-        app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'db.db')}"
+        # Use DATABASE_URL if provided, else fallback to local sqlite
+        if os.environ.get("DATABASE_URL"):
+            app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+            if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
+                app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://", 1)
+        else:
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'db.db')}"
 
     app.config["SECURITY_REDIRECT_BEHAVIOR"] = "spa"
     app.config["SECURITY_FLASH_MESSAGES"] = False

@@ -19,7 +19,8 @@ fake = Faker()
 def seed_data():
     with app.app_context():
         # Drop all tables and recreate
-        datastore : SQLAlchemyUserDatastore = app.datastore
+        from backend import extensions
+        datastore : SQLAlchemyUserDatastore = extensions.user_datastore
 
         db.drop_all()
         db.create_all()
@@ -64,7 +65,7 @@ def seed_data():
             user = User(
                 name=fake.name(),
                 email=fake.unique.email(),
-                password=generate_password_hash("doctor123"),
+                password=hash_password("doctor123"),
                 role="doctor",
                 fs_uniquifier=str(uuid.uuid4()),
                 contact_number=fake.phone_number(),
@@ -93,7 +94,7 @@ def seed_data():
             user = User(
                 name=fake.name(),
                 email=fake.unique.email(),
-                password=generate_password_hash("patient123"),
+                password=hash_password("patient123"),
                 role="patient",
                 fs_uniquifier=str(uuid.uuid4()),
                 contact_number=fake.phone_number(),
