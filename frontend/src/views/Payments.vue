@@ -351,7 +351,7 @@ const processPayment = async () => {
     // Success
     await loadBills(); // Reload real data
     closePayModal();
-    alert('Payment Successful! ✅');
+    alert('Payment Successful! DONE:');
   } catch (err) {
     alert("Payment failed: " + (err.response?.data?.message || err.message));
   } finally {

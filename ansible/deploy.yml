@@ -1,0 +1,22 @@
+- hosts: app
+  become: yes
+
+  tasks:
+
+    - name: Pull latest code
+      git:
+        repo: 'https://github.com/ayushdayal900/FalcoVita.git'
+        dest: /home/ubuntu/FalcoVita
+        version: main
+        force: yes
+
+    - name: Stop containers
+      command: docker compose down
+      args:
+        chdir: /home/ubuntu/FalcoVita
+
+    - name: Start containers
+      command: docker compose up -d --build
+      args:
+        chdir: /home/ubuntu/FalcoVita
+
