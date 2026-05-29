@@ -31,7 +31,7 @@
             <div class="card glass-card border-0 rounded-4 overflow-hidden">
               <div class="card-body p-4 p-md-5">
                 <div class="text-center mb-4">
-                  <h2 class="h4 fw-bold text-dark">Welcome Back</h2>
+                  <h2 class="h4 fw-bold text-dark">Welcome Back !!!</h2>
                   <p class="text-muted small">Please sign in to your account</p>
                 </div>
 
