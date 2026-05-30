@@ -58,7 +58,6 @@
                 <button
                   v-for="opt in msg.action.data.options"
                   :key="opt"
-                  class="btn btn-sm btn-outline-secondary"
                   @click="sendMessage(opt)">
                   {{ opt }}
                 </button>
@@ -70,6 +69,118 @@
                 A staff member will contact you shortly.
               </div>
 
+              <!-- AUTO-EXECUTED ACTIONS (LOADING, ERROR, AND PREMIUM UI CARDS) -->
+              <div v-if="msg.actionLoading" class="mt-2 text-center text-muted py-2">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="ms-2" style="font-size: 0.8rem;">Retrieving details...</span>
+              </div>
+
+              <div v-if="msg.actionError" class="mt-2 alert alert-danger p-2" style="font-size: 0.8rem;">
+                {{ msg.actionError }}
+              </div>
+
+              <!-- BILLING INFO CARD -->
+              <div v-if="msg.action.action === 'get_billing_info' && msg.actionResult" class="mt-2 p-2 bg-white rounded border border-light-subtle shadow-sm text-start">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                  <span class="fw-bold text-dark" style="font-size: 0.8rem;">Billing Summary</span>
+                  <span class="badge bg-warning-subtle text-warning-emphasis" style="font-size: 0.65rem;">
+                    Dues: {{ msg.actionResult.summary?.outstanding_bills || 0 }}
+                  </span>
+                </div>
+                <div class="row g-1 mb-2">
+                  <div class="col-6">
+                    <div class="p-1 bg-danger-subtle rounded text-center" style="font-size: 0.7rem;">
+                      <span class="text-uppercase text-danger-emphasis d-block fw-semibold" style="font-size: 0.55rem;">Total Due</span>
+                      <strong class="text-danger-emphasis">${{ msg.actionResult.summary?.total_due || 0 }}</strong>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="p-1 bg-success-subtle rounded text-center" style="font-size: 0.7rem;">
+                      <span class="text-uppercase text-success-emphasis d-block fw-semibold" style="font-size: 0.55rem;">Total Paid</span>
+                      <strong class="text-success-emphasis">${{ msg.actionResult.summary?.total_paid || 0 }}</strong>
+                    </div>
+                  </div>
+                </div>
+                <div class="billing-list overflow-y-auto" style="max-height: 120px; font-size: 0.75rem;">
+                  <div v-if="!msg.actionResult.bills || msg.actionResult.bills.length === 0" class="text-muted text-center py-1">No billing records.</div>
+                  <div v-else v-for="bill in msg.actionResult.bills" :key="bill.id" class="p-2 border-bottom border-light mb-1 bg-light rounded-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="fw-bold text-dark" style="font-size: 0.7rem;">{{ bill.invoice_number }}</span>
+                      <span :class="['badge', bill.status === 'paid' ? 'bg-success-subtle text-success-emphasis' : 'bg-danger-subtle text-danger-emphasis']" style="font-size: 0.6rem;">
+                        {{ bill.status.toUpperCase() }}
+                      </span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted" style="font-size: 0.65rem;">
+                      <span>{{ bill.description }}</span>
+                      <span class="fw-bold text-dark">${{ bill.amount }}</span>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size: 0.6rem;">
+                      Due: {{ bill.due_date }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- APPOINTMENTS CARD -->
+              <div v-if="msg.action.action === 'view_appointments' && msg.actionResult" class="mt-2 p-2 bg-white rounded border border-light-subtle shadow-sm text-start">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                  <span class="fw-bold text-dark" style="font-size: 0.8rem;">Upcoming Visits ({{ msg.actionResult.count || 0 }})</span>
+                  <span class="badge bg-primary-subtle text-primary-emphasis" style="font-size: 0.65rem;">Schedule</span>
+                </div>
+                <div class="appointments-list overflow-y-auto" style="max-height: 120px; font-size: 0.75rem;">
+                  <div v-if="!msg.actionResult.appointments || msg.actionResult.appointments.length === 0" class="text-muted text-center py-1">No upcoming appointments.</div>
+                  <div v-else v-for="apt in msg.actionResult.appointments" :key="apt.id" class="p-2 border-bottom border-light mb-1 bg-light rounded-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="fw-bold text-dark" style="font-size: 0.7rem;">Dr. {{ apt.doctor_name }}</span>
+                      <span :class="['badge', apt.status === 'confirmed' ? 'bg-success-subtle text-success-emphasis' : apt.status === 'pending' ? 'bg-warning-subtle text-warning-emphasis' : 'bg-secondary-subtle text-secondary-emphasis']" style="font-size: 0.6rem;">
+                        {{ apt.status.toUpperCase() }}
+                      </span>
+                    </div>
+                    <div class="text-muted" style="font-size: 0.65rem;">
+                      <div>📅 {{ apt.day }}, {{ apt.date }}</div>
+                      <div>⏰ {{ apt.time }}</div>
+                    </div>
+                    <div v-if="apt.status !== 'cancelled'" class="mt-1 text-end">
+                      <button class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size: 0.55rem; line-height: 1.2;" @click="sendMessage('Cancel appointment #' + apt.id)">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DOCTORS CARD -->
+              <div v-if="msg.action.action === 'search_doctors' && msg.actionResult" class="mt-2 p-2 bg-white rounded border border-light-subtle shadow-sm text-start">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                  <span class="fw-bold text-dark" style="font-size: 0.8rem;">Available Doctors ({{ msg.actionResult.count || 0 }})</span>
+                  <span class="badge bg-info-subtle text-info-emphasis" style="font-size: 0.65rem;">Directory</span>
+                </div>
+                <div class="doctors-list overflow-y-auto" style="max-height: 140px; font-size: 0.75rem;">
+                  <div v-if="!msg.actionResult.doctors || msg.actionResult.doctors.length === 0" class="text-muted text-center py-1">No doctors found.</div>
+                  <div v-else v-for="doc in msg.actionResult.doctors" :key="doc.id" class="p-2 border-bottom border-light mb-1 bg-light rounded-1">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <div>
+                        <span class="fw-bold text-primary" style="font-size: 0.75rem;">Dr. {{ doc.name }}</span>
+                        <div class="text-muted" style="font-size: 0.6rem;">{{ doc.specialization }} ({{ doc.department }})</div>
+                      </div>
+                      <span :class="['badge', doc.availability === 'Available' ? 'bg-success-subtle text-success-emphasis' : 'bg-secondary-subtle text-secondary-emphasis']" style="font-size: 0.55rem;">
+                        {{ doc.availability }}
+                      </span>
+                    </div>
+                    <div class="d-flex gap-1 justify-content-end mt-1">
+                      <button class="btn btn-xs btn-primary py-0 px-2" style="font-size: 0.55rem; line-height: 1.2;" @click="sendMessage('Book appointment with Dr. ' + doc.name)">
+                        Book
+                      </button>
+                      <button class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.55rem; line-height: 1.2;" @click="sendMessage('Check availability for Dr. ' + doc.name)">
+                        Slots
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -77,6 +188,9 @@
         <div v-if="isLoading" class="message bot">
           <div class="message-content">Typing...</div>
         </div>
+
+        <!-- Safety Spacer for premium scrolling -->
+        <div class="chat-spacer pb-3" style="height: 15px;"></div>
       </div>
 
       <div class="card-footer p-2">
@@ -136,12 +250,22 @@ onMounted(async () => {
 
     if (res.data?.messages) {
       res.data.messages.forEach(m => {
-        messages.value.push({
+        const action = m.action_data ? JSON.parse(m.action_data) : null;
+        const msg = {
           id: Date.now() + Math.random(),
           sender: m.role === 'assistant' ? 'bot' : 'user',
           text: m.content,
-          action: m.action_data ? JSON.parse(m.action_data) : null
-        });
+          action: action,
+          actionResult: null,
+          actionLoading: false,
+          actionError: null
+        };
+        messages.value.push(msg);
+
+        // Auto-execute display-only actions
+        if (action && ['get_billing_info', 'view_appointments', 'search_doctors'].includes(action.action)) {
+          autoExecuteAction(msg);
+        }
       });
     }
   } catch (e) {
@@ -166,8 +290,44 @@ const scrollToBottom = () => {
   nextTick(() => {
     if (chatContainer.value) {
       chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+
+      // Delayed adjust scrolls to account for reactive elements finishing layout/fonts
+      setTimeout(() => {
+        if (chatContainer.value) {
+          chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+        }
+      }, 80);
+
+      setTimeout(() => {
+        if (chatContainer.value) {
+          chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+        }
+      }, 250);
     }
   });
+};
+
+/* ---------------------------------------------------------------------
+   Auto Execute Display Actions
+--------------------------------------------------------------------- */
+const autoExecuteAction = async (msg) => {
+  if (!msg.action) return;
+  msg.actionLoading = true;
+  msg.actionError = null;
+
+  try {
+    const res = await api.post('/chatbot/execute_action', {
+      action: msg.action.action,
+      data: msg.action.data
+    });
+    msg.actionResult = res.data.result;
+  } catch (error) {
+    console.error("Auto-execute action failed:", error);
+    msg.actionError = error.response?.data?.message || "Failed to load information.";
+  } finally {
+    msg.actionLoading = false;
+    scrollToBottom();
+  }
 };
 
 /* ---------------------------------------------------------------------
@@ -198,12 +358,22 @@ const sendMessage = async (forcedText = null) => {
   try {
     const response = await api.post('/chatbot/message', { message: text });
 
-    messages.value.push({
+    const botMsg = {
       id: Date.now() + 1,
       sender: 'bot',
       text: response.data.text,
-      action: response.data.action || null
-    });
+      action: response.data.action || null,
+      actionResult: null,
+      actionLoading: false,
+      actionError: null
+    };
+
+    messages.value.push(botMsg);
+
+    // Auto-execute if it's a data display action
+    if (botMsg.action && ['get_billing_info', 'view_appointments', 'search_doctors'].includes(botMsg.action.action)) {
+      await autoExecuteAction(botMsg);
+    }
 
   } catch (error) {
     let msg = "I'm sorry, I encountered a server error.";

@@ -9,7 +9,6 @@ department_api = Api(department_bp)
 
 
 class DepartmentListResource(Resource):
-    @auth_required('token', 'session')
     @cache.cached(timeout=600)
     def get(self):
         """Get all departments with doctor count"""

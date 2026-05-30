@@ -1,0 +1,26 @@
+{
+  "name": "falcovita",
+  "version": "1.0.0",
+  "description": "FalcoVita is a comprehensive **Hospital Management System (HMS)** designed to streamline healthcare operations. It serves as a centralized platform for managing patients, doctors, appointments, and medical records, improving efficiency and patient care.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayushdayal900/FalcoVita.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ayushdayal900/FalcoVita/issues"
+  },
+  "homepage": "https://github.com/ayushdayal900/FalcoVita#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.1"
+  },
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}
