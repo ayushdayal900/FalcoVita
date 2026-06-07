@@ -215,3 +215,75 @@ class VernamEncryptedString(TypeDecorator):
 
 #### Brief Explanation
 In FalcoVita, the Vernam Cipher is implemented as a custom SQLAlchemy `TypeDecorator` that automatically encrypts sensitive medical text columns (vitals, diagnoses, and prescriptions) with XOR logic before saving them to SQLite. While this provides database-level obfuscation by prefixing values with `vernam::`, it does not offer cryptographically secure protection because the pseudorandom key seed is reused across multiple records, violating the one-time pad requirement.
+
+
+
+### Question 8: How is this project dockerized?
+
+#### Clear Information
+* **Multi-Stage Frontend Build (`frontend/Dockerfile`)**:
+  * **Build Stage**: Uses `node:20-alpine` to install packages and compile static Vue.js assets into `/app/dist`.
+  * **Serve Stage**: Uses `nginx:alpine` to host static assets and overrides the default server block with a custom `nginx.conf` on port 80 to manage Vue single-page router fallbacks.
+* **Backend Image (`backend/Dockerfile`)**:
+  * Containers run `python:3.10-slim`, download packages from `requirements.txt`, define the project root in `PYTHONPATH`, and expose the Flask port 5000 to listen for API calls.
+* **Multi-Container Composition (`docker-compose.yml`)**:
+  * Orchestrates 6 services sharing a private bridge network (`falcovita_network`):
+    1. **`backend`**: Serves Flask REST endpoints on port 5000.
+    2. **`celery_worker`**: Processes queued tasks (MIME email attachments, RAG queries).
+    3. **`celery_beat`**: Periodically schedules tasks.
+    4. **`frontend`**: Map production container port 80 to host port 3000 to serve the web application.
+    5. **`redis`**: Coordinates message queue tasks on port 6379 with a persistent storage volume `redis_data`.
+    6. **`mailhog`**: SMTP simulator exposing port 8026 (Web UI) and port 1026 (SMTP) for local email sandbox testing.
+
+#### Short Code Example
+```dockerfile
+# Multi-stage containerization configuration (frontend/Dockerfile)
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+#### Brief Explanation
+FalcoVita is containerized using Docker and orchestrated via Docker Compose. The frontend utilizes a multi-stage Dockerfile that builds assets using Node and serves them with Nginx. The backend, Celery worker, and Celery beat run inside lightweight Python 3.10 containers. Docker Compose coordinates these services alongside Redis (broker) and MailHog (SMTP testing) on a private bridge network.
+
+
+### Question 9: How is Jenkins used in this project?
+
+#### Clear Information
+* **Declarative Pipeline (`Jenkinsfile`)**: The project includes a declarative CI/CD pipeline defined in the root `Jenkinsfile`.
+* **Automated Polling Trigger**: It polls the GitHub repository every 5 minutes (`pollSCM('H/5 * * * *')`) to automatically trigger a build when changes are pushed to the `main` branch.
+* **Pipeline Stages**:
+  1. **Clone**: Pulls the latest code from the repository branch (`main`).
+  2. **Build Docker Images**: Builds all service images (Nginx, Flask, Redis, Celery) using `docker-compose build`.
+  3. **Teardown Old Containers**: Shuts down any active container instances to avoid port conflicts during deployment (`docker-compose down --remove-orphans || true`).
+  4. **Deploy**: Starts the newly built containers in detached mode (`docker-compose up -d`).
+
+#### Short Code Example
+```groovy
+// Deployment and triggers setup (Jenkinsfile)
+pipeline {
+    agent any
+    triggers {
+        pollSCM('H/5 * * * *') // Poll GitHub every 5 minutes
+    }
+    stages {
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose up -d' // Run in detached mode
+            }
+        }
+    }
+}
+```
+
+#### Brief Explanation
+Jenkins is used to automate the continuous integration and deployment (CI/CD) pipeline for FalcoVita. The pipeline regularly polls GitHub for changes on the `main` branch, automatically pulls the code, builds updated Docker images, stops conflicting active containers, and deploys the new services in detached mode using Docker Compose.
