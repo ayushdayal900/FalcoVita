@@ -14,6 +14,7 @@ from backend.app import app
 from flask_security.datastore import SQLAlchemyUserDatastore
 
 
+
 fake = Faker()
 
 def seed_data():
@@ -172,6 +173,7 @@ def seed_data():
         db.session.commit()
 
         print("Database seeded successfully!")
+        print("Database URI:", db.engine.url)
 
 
 if __name__ == "__main__":

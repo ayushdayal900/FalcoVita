@@ -45,7 +45,7 @@ services:
       dockerfile: backend/Dockerfile
 
     container_name: falcovita_backend
-
+    
     restart: unless-stopped
 
     ports:
@@ -173,7 +173,6 @@ services:
 
     networks:
       - falcovita_network
-
 
 
 

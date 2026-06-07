@@ -1,6 +1,62 @@
 from backend.extensions import db
 from datetime import datetime, timezone
 from flask_security.core import UserMixin, RoleMixin
+import os
+import base64
+import random
+from sqlalchemy.types import TypeDecorator, Text
+
+class VernamEncryptedString(TypeDecorator):
+    """Custom SQLAlchemy TypeDecorator that encrypts text using a Vernam stream cipher
+    before saving to the database, and decrypts it when reading."""
+    
+    impl = Text
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _get_key(self):
+        key = os.environ.get("VERNAM_KEY")
+        if not key:
+            key = os.environ.get("SECRET_KEY", "default-vernam-key")
+        return key
+
+    def _vernam_cipher_bytes(self, data_bytes, key):
+        if not data_bytes:
+            return b""
+        prng = random.Random(key)
+        keystream = bytes(prng.randint(0, 255) for _ in range(len(data_bytes)))
+        return bytes(t ^ k for t, k in zip(data_bytes, keystream))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            value = str(value)
+        if value.startswith("vernam::"):
+            return value
+
+        key = self._get_key()
+        utf8_bytes = value.encode('utf-8')
+        encrypted_bytes = self._vernam_cipher_bytes(utf8_bytes, key)
+        base64_str = base64.b64encode(encrypted_bytes).decode('utf-8')
+        return f"vernam::{base64_str}"
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        if not value.startswith("vernam::"):
+            return value
+
+        try:
+            base64_str = value[len("vernam::"):]
+            encrypted_bytes = base64.b64decode(base64_str.encode('utf-8'))
+            key = self._get_key()
+            decrypted_bytes = self._vernam_cipher_bytes(encrypted_bytes, key)
+            return decrypted_bytes.decode('utf-8')
+        except Exception:
+            return value
+
 
 # abstract class for all models to inherit from
 class BaseModel(db.Model):
@@ -229,8 +285,8 @@ class PatientHistory(BaseModel):
     appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'))
     visit_type = db.Column(db.String(100), nullable=False)  # e.g., consultation, follow-up
     visit_date = db.Column(db.DateTime(timezone=True), nullable=False)
-    diagnosis = db.Column(db.String(255), nullable=True)
-    vitals = db.Column(db.String(255), nullable=True) # JSON format string: {"bp": "120/80", "hr": 72, "temp": 98.6}
+    diagnosis = db.Column(VernamEncryptedString, nullable=True)
+    vitals = db.Column(VernamEncryptedString, nullable=True) # JSON format string: {"bp": "120/80", "hr": 72, "temp": 98.6}
 
     # relationships
     patient = db.relationship('Patient', back_populates='histories')
@@ -261,9 +317,9 @@ class Prescription(BaseModel):
     __tablename__ = 'prescription'
 
     history_id = db.Column(db.Integer, db.ForeignKey('patient_history.id'), nullable=False)
-    medicines = db.Column(db.String(255), nullable=False)
-    dosage = db.Column(db.String(100), nullable=False)
-    instructions = db.Column(db.String(255), nullable=True)
+    medicines = db.Column(VernamEncryptedString, nullable=False)
+    dosage = db.Column(VernamEncryptedString, nullable=False)
+    instructions = db.Column(VernamEncryptedString, nullable=True)
 
     # relationship
     history = db.relationship('PatientHistory', back_populates='prescriptions')
