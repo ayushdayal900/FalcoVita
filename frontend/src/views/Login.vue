@@ -114,22 +114,25 @@ const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const error = ref('');
-const showIntro = ref(true);
+const showIntro = ref(!localStorage.getItem('intro_shown'));
 const wingState = ref('up');
 
 let wingInterval = null;
 
 onMounted(() => {
-  // Start flapping animation
-  wingInterval = setInterval(() => {
-    wingState.value = wingState.value === 'up' ? 'down' : 'up';
-  }, 1000); // Flap every 200ms
+  if (showIntro.value) {
+    // Start flapping animation
+    wingInterval = setInterval(() => {
+      wingState.value = wingState.value === 'up' ? 'down' : 'up';
+    }, 1000); // Flap every 200ms
 
-  // Show intro for 4 seconds then fade it out
-  setTimeout(() => {
-    showIntro.value = false;
-    clearInterval(wingInterval);
-  }, 4000);
+    // Show intro for 4 seconds then fade it out
+    setTimeout(() => {
+      showIntro.value = false;
+      clearInterval(wingInterval);
+      localStorage.setItem('intro_shown', 'true');
+    }, 4000);
+  }
 });
 
 onUnmounted(() => {

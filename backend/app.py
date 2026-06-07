@@ -2,9 +2,12 @@ from flask import Flask
 from dotenv import load_dotenv
 import os
 
-# Load .env
+# Load .env (checks backend/.env first, then falls back to root .env)
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '.env'))
+env_path = os.path.join(basedir, '.env')
+if not os.path.exists(env_path):
+    env_path = os.path.join(basedir, '..', '.env')
+load_dotenv(env_path)
 
 from backend.config import DevelopmentConfig, ProductionConfig
 from backend.resources import (
