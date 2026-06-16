@@ -62,6 +62,12 @@ class DoctorService:
         db.session.add(new_doctor)
         db.session.commit()
 
+        try:
+            from backend.services.opensearch_service import OpenSearchService
+            OpenSearchService.index_doctor(new_doctor)
+        except Exception:
+            pass
+
         return new_doctor
 
     @staticmethod
@@ -71,6 +77,13 @@ class DoctorService:
             raise ServiceError(f"Doctor with id {doctor_id} not found")
         db.session.delete(doctor)
         db.session.commit()
+
+        try:
+            from backend.services.opensearch_service import OpenSearchService
+            OpenSearchService.delete_doctor(doctor_id)
+        except Exception:
+            pass
+
         return True
     
     @staticmethod
@@ -89,5 +102,12 @@ class DoctorService:
         doctor.experience = data.get('experience', doctor.experience)
         
         db.session.commit()
+
+        try:
+            from backend.services.opensearch_service import OpenSearchService
+            OpenSearchService.index_doctor(doctor)
+        except Exception:
+            pass
+
         return doctor
         

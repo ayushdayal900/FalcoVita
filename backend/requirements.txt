@@ -18,3 +18,7 @@ elevenlabs
 google-generativeai
 gunicorn
 psycopg2-binary
+graphene
+pytest
+pytest-mock
+prometheus-client

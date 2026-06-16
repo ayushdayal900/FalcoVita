@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, g, request
 from dotenv import load_dotenv
 import os
+import time
 
 # Load .env (checks backend/.env first, then falls back to root .env)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -31,6 +32,52 @@ from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
+    
+    # Initialize Structured JSON Logging
+    from backend.structured_logging import setup_structured_logging
+    setup_structured_logging(app)
+
+    @app.before_request
+    def start_timer():
+        g.start_time = time.time()
+
+    @app.after_request
+    def log_request(response):
+        if request.path == "/metrics":
+            return response
+        latency = 0.0
+        if hasattr(g, "start_time"):
+            latency_s = time.time() - g.start_time
+            latency = latency_s * 1000  # in ms
+            
+            try:
+                from backend.metrics import HTTP_REQUEST_LATENCY
+                HTTP_REQUEST_LATENCY.labels(method=request.method, endpoint=request.path).observe(latency_s)
+            except Exception:
+                pass
+        
+        try:
+            from backend.metrics import HTTP_REQUEST_COUNT
+            HTTP_REQUEST_COUNT.labels(
+                method=request.method, 
+                endpoint=request.path, 
+                status_code=str(response.status_code)
+            ).inc()
+        except Exception:
+            pass
+        
+        app.logger.info(
+            f"HTTP Request: {request.method} {request.path} - {response.status_code}",
+            extra={
+                "extra": {
+                    "status_code": response.status_code,
+                    "latency_ms": round(latency, 2),
+                    "content_length": response.content_length or 0
+                }
+            }
+        )
+        return response
+
     basedir = os.path.abspath(os.path.dirname(__file__))
     CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -73,6 +120,16 @@ def create_app():
     app.register_blueprint(billing_bp)
     app.register_blueprint(feedback_bp)
     app.register_blueprint(analytics_bp)
+
+    from backend.resources.graphql_resource import graphql_bp
+    app.register_blueprint(graphql_bp)
+
+    from backend.resources.search_resource import search_bp
+    app.register_blueprint(search_bp)
+
+    # Register Prometheus metrics endpoint
+    from backend.metrics import metrics_endpoint
+    app.add_url_rule("/metrics", "metrics", metrics_endpoint)
 
     # Initialize API
     api.init_app(app)

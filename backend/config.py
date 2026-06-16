@@ -32,6 +32,9 @@ class DevelopmentConfig(BaseConfig):
     # Google Chat Webhook (for notifications)
     GOOGLE_CHAT_WEBHOOK_URL = os.environ.get("GOOGLE_CHAT_WEBHOOK_URL", "")
 
+    # OpenSearch URL
+    OPENSEARCH_URL = os.environ.get("OPENSEARCH_URL", "http://localhost:9200")
+
     
 
 
@@ -60,3 +63,6 @@ class ProductionConfig(BaseConfig):
     CACHE_TYPE = "RedisCache"
     CACHE_REDIS_URL = os.environ.get("REDIS_URL")
     CACHE_DEFAULT_TIMEOUT = 300
+
+    # OpenSearch URL
+    OPENSEARCH_URL = os.environ.get("OPENSEARCH_URL", "http://opensearch:9200")
