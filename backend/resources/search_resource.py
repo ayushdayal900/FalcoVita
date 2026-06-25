@@ -33,3 +33,4 @@ def search_doctors():
             })
             
     return jsonify(results), 200
+    

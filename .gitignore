@@ -30,3 +30,7 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Celery Beat
+celerybeat-schedule*
+
